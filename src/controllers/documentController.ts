@@ -26,7 +26,6 @@ export const getAllDocuments = (req: Request, res: Response): void => {
   res.json(documents);
 };
 
-// Get Document By ID
 export const getDocumentById = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
 
@@ -42,7 +41,6 @@ export const getDocumentById = (req: Request, res: Response): void => {
   res.json(document);
 };
 
-// Update Document
 export const updateDocument = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
 
@@ -71,7 +69,6 @@ export const updateDocument = (req: Request, res: Response): void => {
   });
 };
 
-// Delete Document
 export const deleteDocument = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
 
