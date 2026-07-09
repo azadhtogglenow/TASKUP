@@ -1,5 +1,5 @@
-import { Document, CreateDocumentDTO } from "../types/document";
-
+import type { DocumentInput } from '../schemas/documentSchema';
+import type {Document} from "../types/document";
 class DocumentModel {
   private documents: Map<number, Document>;
   private nextId: number;
@@ -17,7 +17,7 @@ class DocumentModel {
     return this.documents.get(id);
   }
 
-  create(data: CreateDocumentDTO): Document {
+  create(data: DocumentInput): Document {
     const document: Document = {
       id: this.nextId++,
       title: data.title,
@@ -29,13 +29,9 @@ class DocumentModel {
     return document;
   }
 
-  update(id: number, data: CreateDocumentDTO): Document | null {
-    const document = this.documents.get(id);
 
-    if (!document) {
-      return null;
-    }
-
+  update(id: number, data: DocumentInput): Document  {
+    const document = this.documents.get(id)!;
     document.title = data.title;
     document.content = data.content;
 
@@ -43,6 +39,7 @@ class DocumentModel {
     return document;
   }
 
+  
   delete(id: number): boolean {
     return this.documents.delete(id);
   }
