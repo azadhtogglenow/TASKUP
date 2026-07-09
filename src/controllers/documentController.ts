@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { documentModel } from "../models/documentModel";
 import { documentSchema } from "../schemas/documentSchema";
 
-// Upload Document
 export const createDocument = (req: Request, res: Response): void => {
   const result = documentSchema.safeParse(req.body);
 
@@ -22,7 +21,6 @@ export const createDocument = (req: Request, res: Response): void => {
   });
 };
 
-// Get All Documents
 export const getAllDocuments = (req: Request, res: Response): void => {
   const documents = documentModel.getAll();
   res.json(documents);
