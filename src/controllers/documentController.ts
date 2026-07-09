@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { documentModel } from "../models/documentModel";
 import { documentSchema } from "../schemas/documentSchema";
 
