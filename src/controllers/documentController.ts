@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { documentModel } from "../models/documentModel";
 import { documentSchema } from "../schemas/documentSchema";
 
@@ -23,11 +24,17 @@ export const createDocument = (req: Request, res: Response): void => {
 
 export const getAllDocuments = (req: Request, res: Response): void => {
   const documents = documentModel.getAll();
-  res.json(documents);
+  res.json({message:"All documents retrieved successfully", data: documents});
 };
 
 export const getDocumentById = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
+  const parsedID = z.coerce.number().int().safeParse(req.params.id);
+
+  if(!parsedID.success){
+     res.status(400).json({message: 'id must be a positive integer' });
+     return;
+  }
+  const id = parsedID.data;
 
   const document = documentModel.getById(id);
 
@@ -70,7 +77,13 @@ export const updateDocument = (req: Request, res: Response): void => {
 };
 
 export const deleteDocument = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
+  const parsedID = z.coerce.number().int().safeParse(req.params.id);
+
+  if(!parsedID.success){
+     res.status(400).json({message: 'id must be a positive integer' });
+     return;
+  }
+  const id = parsedID.data;
 
   if (!documentModel.exists(id)) {
     res.status(404).json({
@@ -81,7 +94,5 @@ export const deleteDocument = (req: Request, res: Response): void => {
 
   documentModel.delete(id);
 
-  res.json({
-    message: "Document deleted successfully",
-  });
+  res.send(204).send();
 };
