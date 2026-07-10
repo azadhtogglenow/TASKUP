@@ -4,7 +4,7 @@ import authRoutes from "../routes/authRoutes";
 import { userModel } from "../models/userModel";
 
 const createApp = async (): Promise<Application> => {
-  const app = express();
+  const app: Application = express();
 
   // Middleware
   app.use(express.json());
