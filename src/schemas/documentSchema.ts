@@ -6,9 +6,7 @@ export const documentSchema = z
       .string()
       .min(1, "Title is required")
       .max(200, "Title must be at most 200 characters"),
-    content: z
-      .string()
-      .min(1, "Content is required"),
+    content: z.string().min(1, "Content is required"),
   })
   .strict();
 

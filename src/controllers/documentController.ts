@@ -1,8 +1,8 @@
-import type { Request, Response } from "express";
-import { z } from "zod";
+import { Request, Response } from "express";
 import { documentModel } from "../models/documentModel";
 import { documentSchema } from "../schemas/documentSchema";
 
+// Create Document (Authenticated users only)
 export const createDocument = (req: Request, res: Response): void => {
   const result = documentSchema.safeParse(req.body);
 
@@ -14,33 +14,39 @@ export const createDocument = (req: Request, res: Response): void => {
     return;
   }
 
-  const document = documentModel.create(result.data);
+  // Assign document to logged-in user
+  const document = documentModel.create(result.data, req.user!.userId);
 
   res.status(201).json({
-    message: "Document uploaded successfully",
+    message: "Document created successfully",
     data: document,
   });
 };
 
+// Get All Documents
+// - Admin: sees all documents
+// - User: sees only their documents
 export const getAllDocuments = (req: Request, res: Response): void => {
-  const documents = documentModel.getAll();
-  res.json({message:"All documents retrieved successfully", data: documents});
+  const documents = documentModel.getAll(req.user!.userId, req.user!.role);
+  res.json(documents);
 };
 
+// Get Document By ID
+// - Admin: can access any document
+// - User: can only access their own document
 export const getDocumentById = (req: Request, res: Response): void => {
-  const parsedID = z.coerce.number().int().safeParse(req.params.id);
-
-  if(!parsedID.success){
-     res.status(400).json({message: 'id must be a positive integer' });
-     return;
-  }
-  const id = parsedID.data;
-
+  const id = Number(req.params.id);
   const document = documentModel.getById(id);
 
   if (!document) {
-    res.status(404).json({
-      message: "Document not found",
+    res.status(404).json({ message: "Document not found" });
+    return;
+  }
+
+  // Ownership check (admin bypasses)
+  if (req.user!.role !== "admin" && document.userId !== req.user!.userId) {
+    res.status(403).json({
+      message: "Access denied. You do not own this document.",
     });
     return;
   }
@@ -48,12 +54,21 @@ export const getDocumentById = (req: Request, res: Response): void => {
   res.json(document);
 };
 
+// Update Document
+// - Admin: can update any document
+// - User: can only update their own document
 export const updateDocument = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
 
   if (!documentModel.exists(id)) {
-    res.status(404).json({
-      message: "Document not found",
+    res.status(404).json({ message: "Document not found" });
+    return;
+  }
+
+  // Ownership check (admin bypasses)
+  if (req.user!.role !== "admin" && !documentModel.isOwner(id, req.user!.userId)) {
+    res.status(403).json({
+      message: "Access denied. You do not own this document.",
     });
     return;
   }
@@ -76,23 +91,28 @@ export const updateDocument = (req: Request, res: Response): void => {
   });
 };
 
+// Delete Document
+// - Admin: can delete any document
+// - User: can only delete their own document
 export const deleteDocument = (req: Request, res: Response): void => {
-  const parsedID = z.coerce.number().int().safeParse(req.params.id);
-
-  if(!parsedID.success){
-     res.status(400).json({message: 'id must be a positive integer' });
-     return;
-  }
-  const id = parsedID.data;
+  const id = Number(req.params.id);
 
   if (!documentModel.exists(id)) {
-    res.status(404).json({
-      message: "Document not found",
+    res.status(404).json({ message: "Document not found" });
+    return;
+  }
+
+  // Ownership check (admin bypasses)
+  if (req.user!.role !== "admin" && !documentModel.isOwner(id, req.user!.userId)) {
+    res.status(403).json({
+      message: "Access denied. You do not own this document.",
     });
     return;
   }
 
   documentModel.delete(id);
 
-  res.send(204).send();
+  res.json({
+    message: "Document deleted successfully",
+  });
 };
