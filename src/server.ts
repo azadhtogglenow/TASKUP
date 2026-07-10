@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config();  // Load .env file FIRST
+dotenv.config();  
 
 import app from "./app";
 
