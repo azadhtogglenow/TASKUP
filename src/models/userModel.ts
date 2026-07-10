@@ -9,7 +9,6 @@ export interface User {
   createdAt: Date;
 }
 
-// In-memory storage 
 const users: Map<number, User> = new Map();
 let nextId = 1;
 
