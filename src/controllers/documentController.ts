@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { documentModel } from "../models/documentModel";
 import { documentSchema } from "../schemas/documentSchema";
 
-// Create Document (Authenticated users only)
+
 export const createDocument = (req: Request, res: Response): void => {
   const result = documentSchema.safeParse(req.body);
 
@@ -14,7 +14,7 @@ export const createDocument = (req: Request, res: Response): void => {
     return;
   }
 
-  // Assign document to logged-in user
+ 
   const document = documentModel.create(result.data, req.user!.userId);
 
   res.status(201).json({
@@ -23,17 +23,13 @@ export const createDocument = (req: Request, res: Response): void => {
   });
 };
 
-// Get All Documents
-// - Admin: sees all documents
-// - User: sees only their documents
+
 export const getAllDocuments = (req: Request, res: Response): void => {
   const documents = documentModel.getAll(req.user!.userId, req.user!.role);
   res.json(documents);
 };
 
-// Get Document By ID
-// - Admin: can access any document
-// - User: can only access their own document
+
 export const getDocumentById = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
   const document = documentModel.getById(id);
@@ -43,7 +39,6 @@ export const getDocumentById = (req: Request, res: Response): void => {
     return;
   }
 
-  // Ownership check (admin bypasses)
   if (req.user!.role !== "admin" && document.userId !== req.user!.userId) {
     res.status(403).json({
       message: "Access denied. You do not own this document.",
@@ -54,9 +49,7 @@ export const getDocumentById = (req: Request, res: Response): void => {
   res.json(document);
 };
 
-// Update Document
-// - Admin: can update any document
-// - User: can only update their own document
+
 export const updateDocument = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
 
@@ -65,7 +58,7 @@ export const updateDocument = (req: Request, res: Response): void => {
     return;
   }
 
-  // Ownership check (admin bypasses)
+
   if (req.user!.role !== "admin" && !documentModel.isOwner(id, req.user!.userId)) {
     res.status(403).json({
       message: "Access denied. You do not own this document.",
@@ -91,9 +84,7 @@ export const updateDocument = (req: Request, res: Response): void => {
   });
 };
 
-// Delete Document
-// - Admin: can delete any document
-// - User: can only delete their own document
+
 export const deleteDocument = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
 
@@ -102,7 +93,7 @@ export const deleteDocument = (req: Request, res: Response): void => {
     return;
   }
 
-  // Ownership check (admin bypasses)
+
   if (req.user!.role !== "admin" && !documentModel.isOwner(id, req.user!.userId)) {
     res.status(403).json({
       message: "Access denied. You do not own this document.",

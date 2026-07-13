@@ -9,10 +9,7 @@ import {
 import { authenticate } from "../middleware/authMiddleware";
 
 const router = Router();
-
-// All document routes require authentication
 router.use(authenticate);
-
 router.post("/", createDocument);
 router.get("/", getAllDocuments);
 router.get("/:id", getDocumentById);

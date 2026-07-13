@@ -1,11 +1,12 @@
-import { Document, CreateDocumentDTO } from "../types/document";
+import { Document } from "../types/document";
+import {DocumentInput } from "../schemas/documentSchema";
 
-// In-memory storage
+
 const documents: Map<number, Document> = new Map();
 let nextId = 1;
 
 export const documentModel = {
-  create(data: CreateDocumentDTO, userId: number): Document {
+  create(data: DocumentInput, userId: number): Document {
     const now = new Date();
     const document: Document = {
       id: nextId++,
@@ -23,12 +24,12 @@ export const documentModel = {
   getAll(userId?: number, userRole?: string): Document[] {
     const allDocs = Array.from(documents.values());
 
-    // Admin sees all documents
+   
     if (userRole === "admin") {
       return allDocs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
-    // Regular user sees only their documents
+    
     if (userId) {
       return allDocs
         .filter((doc) => doc.userId === userId)
@@ -42,7 +43,7 @@ export const documentModel = {
     return documents.get(id);
   },
 
-  update(id: number, data: Partial<CreateDocumentDTO>): Document | undefined {
+  update(id: number, data: Partial<DocumentInput>): Document | undefined {
     const document = documents.get(id);
     if (!document) return undefined;
 
@@ -65,9 +66,8 @@ export const documentModel = {
     return documents.has(id);
   },
 
-  // Check if user owns the document
   isOwner(documentId: number, userId: number): boolean {
     const doc = documents.get(documentId);
     return doc ? doc.userId === userId : false;
   },
-};
+};                         

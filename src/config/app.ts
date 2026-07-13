@@ -6,13 +6,10 @@ import { userModel } from "../models/userModel";
 const createApp = async (): Promise<Application> => {
   const app: Application = express();
 
-  // Middleware
   app.use(express.json());
 
-  // Seed admin user
   await userModel.seedAdmin();
 
-  // Root route
   app.get("/", (req, res) => {
     res.json({
       message: "API is running",

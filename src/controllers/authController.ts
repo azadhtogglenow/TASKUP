@@ -3,7 +3,7 @@ import { userModel } from "../models/userModel";
 import { signupSchema, loginSchema } from "../schemas/authSchema";
 import { jwtUtils } from "../utils/jwt";
 
-// Signup
+
 export const signup = async (req: Request, res: Response): Promise<void> => {
   const result = signupSchema.safeParse(req.body);
 
@@ -16,7 +16,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    // New users are always "user" role (admin is seeded separately)
+    
     const user = await userModel.create(result.data, "user");
 
     const token = jwtUtils.sign({
@@ -44,7 +44,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Login
+
 export const login = async (req: Request, res: Response): Promise<void> => {
   const result = loginSchema.safeParse(req.body);
 
@@ -91,7 +91,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// Get Current User
+
 export const getMe = (req: Request, res: Response): void => {
   const user = userModel.findById(req.user!.userId);
 

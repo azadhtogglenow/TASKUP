@@ -2,15 +2,12 @@ export interface Document {
   id: number;
   title: string;
   content: string;
-  userId: number;        // Owner of the document
+  userId: number;        
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface CreateDocumentDTO {
-  title: string;
-  content: string;
-}
+
 
 
 

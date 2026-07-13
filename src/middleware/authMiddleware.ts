@@ -14,24 +14,36 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ): void => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({
-      message: "Access denied. No token provided.",
-    });
-    return;
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader?.startsWith("Bearer ")) {
+      res.status(401).json({
+        success: false,
+        message: "Access denied. No token provided.",
+        code: "MISSING_TOKEN"
+      });
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
     const decoded = jwtUtils.verify(token);
+    
     req.user = decoded;
     next();
-  } catch {
+  } catch (error) {
+    const err = error as Error;
+    // Log error for monitoring
+    console.error("Authentication error:", err.message);
+    
     res.status(401).json({
-      message: "Invalid or expired token.",
+      success: false,
+      message: err.name === "TokenExpiredError" 
+        ? "Token expired. Please login again." 
+        : "Invalid or expired token.",
+      code: err.name === "TokenExpiredError" 
+        ? "TOKEN_EXPIRED" 
+        : "INVALID_TOKEN"
     });
   }
 };
