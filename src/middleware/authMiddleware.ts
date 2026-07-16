@@ -30,7 +30,6 @@ export const authenticate = (
     next();
   } catch (error) {
     const err = error as Error;
-    // Log error for monitoring
     console.error("Authentication error:", err.message);
     res.status(401).json({
       success: false,
