@@ -1,23 +1,22 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
-build/
-
-# Environment variables
+# Environment variables (CONTAINS SECRETS!)
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.production
+.env.staging
+
+# Build
+dist/
+build/
 
 # Logs
 logs/
 *.log
 npm-debug.log*
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
@@ -27,6 +26,6 @@ Thumbs.db
 *.swp
 *.swo
 
-# Cache
-.cache/
-.eslintcache
+# Coverage
+coverage/
+.nyc_output/
