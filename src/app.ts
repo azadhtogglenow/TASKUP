@@ -44,13 +44,6 @@ const createApp = async (): Promise<Application> => {
   app.use(express.json()); 
   app.use(generalLimiter);
   await userModel.seedAdmin();
-  app.get("/health", (req, res) => {
-    res.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      environment: env.NODE_ENV,
-    });
-  });
   app.get("/", (req, res) => {
     res.json({
       message: "API is running",
