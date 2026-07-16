@@ -16,7 +16,6 @@ export const authenticate = (
 ): void => {
   try {
     const authHeader = req.headers.authorization;
-    
     if (!authHeader?.startsWith("Bearer ")) {
       res.status(401).json({
         success: false,
@@ -25,17 +24,14 @@ export const authenticate = (
       });
       return;
     }
-
     const token = authHeader.split(" ")[1];
     const decoded = jwtUtils.verify(token);
-    
     req.user = decoded;
     next();
   } catch (error) {
     const err = error as Error;
     // Log error for monitoring
     console.error("Authentication error:", err.message);
-    
     res.status(401).json({
       success: false,
       message: err.name === "TokenExpiredError" 

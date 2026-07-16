@@ -37,7 +37,6 @@ export const getDocumentById = (req: Request, res: Response): void => {
 };
 export const updateDocument = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
-
   if (!documentModel.exists(id)) {
     res.status(404).json({ message: "Document not found" });
     return;
@@ -64,7 +63,6 @@ export const updateDocument = (req: Request, res: Response): void => {
 };
 export const deleteDocument = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
-
   if (!documentModel.exists(id)) {
     res.status(404).json({ message: "Document not found" });
     return;

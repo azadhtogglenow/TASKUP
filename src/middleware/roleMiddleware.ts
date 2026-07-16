@@ -6,14 +6,12 @@ export const authorize = (...roles: string[]) => {
       res.status(401).json({ message: "Not authenticated" });
       return;
     }
-
     if (!roles.includes(req.user.role)) {
       res.status(403).json({
         message: "Access denied. Insufficient permissions.",
       });
       return;
     }
-
     next();
   };
 };

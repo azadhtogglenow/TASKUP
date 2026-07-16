@@ -42,12 +42,9 @@ const createApp = async (): Promise<Application> => {
         if (!origin) {
           return callback(null, true);
         }
-
-       
         const allowedOrigins = env.CORS_ORIGIN.split(",").map((o) =>
           o.trim()
         );
-
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
@@ -110,17 +107,13 @@ const createApp = async (): Promise<Application> => {
   app.use(
     (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
       console.error(" Error:", err.message);
-
-     
       const message = isDev ? err.message : "Internal server error";
-
       res.status(500).json({
         message,
         ...(isDev && { stack: err.stack }),
       });
     }
   );
-
   return app;
 };
 export default createApp;
