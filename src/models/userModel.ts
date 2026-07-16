@@ -41,7 +41,7 @@ export const userModel = {
   },
   async seedAdmin(): Promise<void> {
     const adminEmail = "admin@example.com";
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin123456"; // Fallback for dev only
+    const adminPassword = process.env.ADMIN_PASSWORD || "admin123456"; 
     if (!process.env.ADMIN_PASSWORD && process.env.NODE_ENV === "production") {
       console.warn("ADMIN_PASSWORD not set. Using default (unsafe in production)");
     }

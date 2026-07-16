@@ -10,32 +10,15 @@ import { generalLimiter, authLimiter } from "./middleware/rateLimiter";
 const createApp = async (): Promise<Application> => {
   const app = express();
   app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          frameAncestors: ["'none'"], 
-        },
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        frameAncestors: ["'none'"],
       },
-      crossOriginEmbedderPolicy: true,
-      crossOriginOpenerPolicy: { policy: "same-origin" },
-      crossOriginResourcePolicy: { policy: "same-origin" },
-      dnsPrefetchControl: { allow: false },
-      frameguard: { action: "deny" },
-      hidePoweredBy: true,
-      hsts: {
-        maxAge: 31536000, // 1 year
-        includeSubDomains: true,
-        preload: true,
-      },
-      ieNoOpen: true,
-      noSniff: true,
-      originAgentCluster: true,
-      permittedCrossDomainPolicies: { permittedPolicies: "none" },
-      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-      xssFilter: true,
-    })
-  );
+    },
+  })
+);
   app.use(
     cors({
       origin: (origin, callback) => {
@@ -58,7 +41,7 @@ const createApp = async (): Promise<Application> => {
       maxAge: 86400, 
     })
   );
-  app.use(express.json({ limit: "10kb" })); 
+  app.use(express.json()); 
   app.use(generalLimiter);
   await userModel.seedAdmin();
   app.get("/health", (req, res) => {
