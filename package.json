@@ -12,7 +12,7 @@
     "audit": "npm audit --audit-level=high",
     "audit:fix": "npm audit fix",
     "outdated": "npm outdated",
-    "check:licenses": "license-checker --summary --onlyAllow 'MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause'"
+    "check:licenses": "license-checker --summary --onlyAllow 'MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause;Python-2.0'"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -36,6 +36,9 @@
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "tar": "^7.5.16"
   },
   "description": "building rest api end points",
   "main": "index.js",
