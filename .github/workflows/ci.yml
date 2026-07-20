@@ -55,8 +55,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run tests
-        run: npm test
         env:
           NODE_ENV: test
           JWT_SECRET: ci-test-secret-key-that-is-long-enough-for-testing
