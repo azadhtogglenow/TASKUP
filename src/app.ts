@@ -87,15 +87,16 @@ const createApp = async (): Promise<Application> => {
     });
   });
 
- 
-  app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-    console.error(" Error:", err.message);
-    const message = isDev ? err.message : "Internal server error";
-    res.status(500).json({
-      message,
-      ...(isDev && { stack: err.stack }),
-    });
+
+app.use((err: Error, req: Request, res: Response) => {
+  console.error(" Error:", err.message);
+  const message = isDev ? err.message : "Internal server error";
+  res.status(500).json({
+    message,
+    ...(isDev && { stack: err.stack }),
   });
+});
+
 
   return app;
 };
