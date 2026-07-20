@@ -1,4 +1,4 @@
-import express, { Application } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import documentRoutes from "./routes/documentRoutes";
@@ -9,25 +9,25 @@ import { generalLimiter, authLimiter } from "./middleware/rateLimiter";
 
 const createApp = async (): Promise<Application> => {
   const app = express();
+  
   app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        frameAncestors: ["'none'"],
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          frameAncestors: ["'none'"],
+        },
       },
-    },
-  })
-);
+    })
+  );
+
   app.use(
     cors({
       origin: (origin, callback) => {
         if (!origin) {
           return callback(null, true);
         }
-        const allowedOrigins = env.CORS_ORIGIN.split(",").map((o) =>
-          o.trim()
-        );
+        const allowedOrigins = env.CORS_ORIGIN.split(",").map((o) => o.trim());
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
@@ -41,10 +41,13 @@ const createApp = async (): Promise<Application> => {
       maxAge: 86400, 
     })
   );
+
   app.use(express.json()); 
   app.use(generalLimiter);
+  
   await userModel.seedAdmin();
-  app.get("/", (req, res) => {
+
+  app.get("/", (req: Request, res: Response) => {
     res.json({
       message: "API is running",
       version: "1.0.0",
@@ -64,32 +67,37 @@ const createApp = async (): Promise<Application> => {
       },
     });
   });
+
   app.use("/auth", authLimiter, authRoutes);
   app.use("/documents", documentRoutes);
-  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+
+ 
+  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     if (err.message === "CORS not allowed") {
-      res.status(403).json({
-        message: "CORS: Origin not allowed",
-      });
+      res.status(403).json({ message: "CORS: Origin not allowed" });
       return;
     }
     next(err);
   });
-  app.use((req, res) => {
+
+
+  app.use((req: Request, res: Response) => {
     res.status(404).json({
       message: `Route ${req.method} ${req.path} not found`,
     });
   });
-  app.use(
-    (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-      console.error(" Error:", err.message);
-      const message = isDev ? err.message : "Internal server error";
-      res.status(500).json({
-        message,
-        ...(isDev && { stack: err.stack }),
-      });
-    }
-  );
+
+ 
+  app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+    console.error(" Error:", err.message);
+    const message = isDev ? err.message : "Internal server error";
+    res.status(500).json({
+      message,
+      ...(isDev && { stack: err.stack }),
+    });
+  });
+
   return app;
 };
+
 export default createApp;
