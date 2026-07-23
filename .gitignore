@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Environment variables (CONTAINS SECRETS!)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Build
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage
+coverage/
+.nyc_output/
