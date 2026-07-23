@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { SignupInput } from "../schemas/auth-schema";
+import { SignupInput } from "../schemas/auth-Schema";
 
 export interface User {
   id: number;

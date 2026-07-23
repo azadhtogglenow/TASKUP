@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { userModel } from "../models/user-model";
-import { signupSchema, loginSchema } from "../schemas/auth-schema";
+import { userModel } from "../models/user-Model";
+import { signupSchema, loginSchema } from "../schemas/auth-Schema";
 import { jwtUtils } from "../utils/jwt";
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
