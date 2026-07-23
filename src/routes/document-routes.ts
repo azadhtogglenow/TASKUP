@@ -5,7 +5,7 @@ import {
   getDocumentById,
   updateDocument,
   deleteDocument,
-} from "../controllers/documentController";
+} from "../controllers/document-controller";
 
 const router = Router();
 

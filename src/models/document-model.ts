@@ -1,4 +1,4 @@
-import type { DocumentInput } from '../schemas/documentSchema';
+import type { DocumentInput } from '../schemas/document-schema';
 import type {Document} from "../types/document";
 class DocumentModel {
   private documents: Map<number, Document>;

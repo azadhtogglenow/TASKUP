@@ -1,5 +1,5 @@
 import express, { Application } from "express";
-import documentRoutes from "../routes/documentRoutes";
+import documentRoutes from "../routes/document-routes";
 
 const createApp = (): Application => {
   const app = express();
