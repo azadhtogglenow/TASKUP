@@ -1,5 +1,5 @@
 import express, { Application } from "express";
-import documentRoutes from "../routes/document-Routes";
+import documentRoutes from "../routes/document-routes";
 import authRoutes from "../routes/auth-Routes";
 import { userModel } from "../models/user-Model";
 
