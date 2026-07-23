@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { documentModel } from "../models/documentModel";
-import { documentSchema } from "../schemas/documentSchema";
+import { documentModel } from "../models/document-Model";
+import { documentSchema } from "../schemas/document-Schema";
 
 
 export const createDocument = (req: Request, res: Response): void => {

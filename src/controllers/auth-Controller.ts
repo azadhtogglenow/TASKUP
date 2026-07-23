@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { userModel } from "../models/userModel";
-import { signupSchema, loginSchema } from "../schemas/authSchema";
+import { userModel } from "../models/user-Model";
+import { signupSchema, loginSchema } from "../schemas/auth-Schema";
 import { jwtUtils } from "../utils/jwt";
 
 

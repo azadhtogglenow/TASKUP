@@ -1,5 +1,5 @@
 import { Document } from "../types/document";
-import {DocumentInput } from "../schemas/documentSchema";
+import {DocumentInput } from "../schemas/document-Schema";
 
 
 const documents: Map<number, Document> = new Map();

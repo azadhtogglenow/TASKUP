@@ -1,7 +1,7 @@
 import express, { Application } from "express";
-import documentRoutes from "../routes/documentRoutes";
-import authRoutes from "../routes/authRoutes";
-import { userModel } from "../models/userModel";
+import documentRoutes from "../routes/document-Routes";
+import authRoutes from "../routes/auth-Routes";
+import { userModel } from "../models/user-Model";
 
 const createApp = async (): Promise<Application> => {
   const app: Application = express();

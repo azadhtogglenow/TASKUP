@@ -5,8 +5,8 @@ import {
   getDocumentById,
   updateDocument,
   deleteDocument,
-} from "../controllers/documentController";
-import { authenticate } from "../middleware/authMiddleware";
+} from "../controllers/document-Controller";
+import { authenticate } from "../middleware/auth-Middleware";
 
 const router = Router();
 router.use(authenticate);
