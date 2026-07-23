@@ -1,6 +1,6 @@
 import express, { Application } from "express";
 import documentRoutes from "../routes/document-routes";
-import authRoutes from "../routes/auth-Routes";
+import authRoutes from "../routes/auth-routes";
 
 const createApp = (): Application => {
   const app = express();

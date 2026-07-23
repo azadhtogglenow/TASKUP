@@ -1,8 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import { documentModel } from "../models/documentModel";
 import { documentSchema } from "../schemas/document-Schema";
-
+import { documentModel } from "../models/document-model";
 export const createDocument = (req: Request, res: Response): void => {
   const result = documentSchema.safeParse(req.body);
 
