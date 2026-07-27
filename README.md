@@ -1,34 +1,13 @@
-# Document API
+# Database Performance Optimization: Indexing Strategy
 
-## Setup
-```bash
-npm install
-npm run dev
-```
+This task-6 demonstrates how to analyze, benchmark, and optimize PostgreSQL query performance using database indexes on a standard E-commerce schema (`customer`, `orders`, `order_item`).
 
-## API Examples
+---
 
-### Create Document
-```bash
-curl -X POST http://localhost:3000/documents -H "Content-Type: application/json" -d '{"title": "Title", "content": "Content"}'
-```
+##  Database Schema
 
-### Get All Documents
-```bash
-curl http://localhost:3000/documents
-```
+The database consists of three relational tables:
+*   **`customer`**: Stores user profiles and locations.
+*   **`orders`**: Tracks purchases linked to customers.
+*   **`order_item`**: Contains line items for each order.
 
-### Get Document by ID
-```bash
-curl http://localhost:3000/documents/id
-```
-
-### Update Document
-```bash
-curl -X PUT http://localhost:3000/documents/id -H "Content-Type: application/json" -d '{"title": "Updated Title", "content": "Updated Content"}'
-```
-
-### Delete Document
-```bash
-curl -X DELETE http://localhost:3000/documents/id
-```
