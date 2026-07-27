@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { SignupInput } from "../schemas/authSchema";
+import { SignupInput } from "../schemas/auth-Schema";
 import { User, UserRole } from "../types/user";
 import { env } from "../config/env";
 
