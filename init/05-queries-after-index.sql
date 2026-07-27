@@ -1,5 +1,5 @@
 
-EXPLAIN (ANALYZE, BUFFERS)
+EXPLAIN (ANALYZE)
 SELECT 
     o.id,
     o.order_date,
