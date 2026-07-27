@@ -4,7 +4,7 @@ This task-6 demonstrates how to analyze, benchmark, and optimize PostgreSQL quer
 
 ---
 
-## 🏢 Database Schema
+##  Database Schema
 
 The database consists of three relational tables:
 *   **`customer`**: Stores user profiles and locations.
