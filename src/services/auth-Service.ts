@@ -42,7 +42,7 @@ export const AuthService = {
       { id: user.id, email: user.role }, // Payload
       process.env.JWT_SECRET || 'secret', // Secret
       { 
-        // Cast the value to any or SignOptions['expiresIn'] to satisfy the type checker
+    
         expiresIn: (process.env.JWT_EXPIRES_IN || '24h') as any 
       }
     );
