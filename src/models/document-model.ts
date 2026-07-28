@@ -1,52 +1,72 @@
-import type { DocumentInput } from '../schemas/document-schema';
-import type {Document} from "../types/document";
-class DocumentModel {
-  private documents: Map<number, Document>;
-  private nextId: number;
+import { query } from '../config/database';
 
-  constructor() {
-    this.documents = new Map<number, Document>();
-    this.nextId = 1;
-  }
+export type DocumentStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
-  getAll(): Document[] {
-    return Array.from(this.documents.values());
-  }
-
-  getById(id: number): Document | undefined {
-    return this.documents.get(id);
-  }
-
-  create(data: DocumentInput): Document {
-    const document: Document = {
-      id: this.nextId++,
-      title: data.title,
-      content: data.content,
-      createdAt: new Date(),
-    };
-
-    this.documents.set(document.id, document);
-    return document;
-  }
-
-
-  update(id: number, data: DocumentInput): Document  {
-    const document = this.documents.get(id)!;
-    document.title = data.title;
-    document.content = data.content;
-
-    this.documents.set(id, document);
-    return document;
-  }
-
-  
-  delete(id: number): boolean {
-    return this.documents.delete(id);
-  }
-
-  exists(id: number): boolean {
-    return this.documents.has(id);
-  }
+export interface Document {
+  id: string;
+  user_id: string;
+  title: string;
+  file_path: string | null;
+  status: DocumentStatus;
+  created_at: Date;
+  updated_at: Date;
 }
 
-export const documentModel = new DocumentModel();
+export const DocumentModel = {
+  async findById(id: string): Promise<Document | null> {
+    const result = await query('SELECT * FROM documents WHERE id = $1', [id]);
+    return result.rows[0] || null;
+  },
+
+  async findByUserId(userId: string): Promise<Document[]> {
+    const result = await query(
+      'SELECT * FROM documents WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    );
+    return result.rows;
+  },
+
+  async findAll(): Promise<Document[]> {
+    const result = await query('SELECT * FROM documents ORDER BY created_at DESC');
+    return result.rows;
+  },
+
+  async create(userId: string, title: string, filePath?: string): Promise<Document> {
+    const result = await query(
+      'INSERT INTO documents (user_id, title, file_path) VALUES ($1, $2, $3) RETURNING *',
+      [userId, title, filePath || null]
+    );
+    return result.rows[0];
+  },
+
+  async update(id: string, data: Partial<Pick<Document, 'title' | 'status'>>): Promise<Document | null> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+
+    if (data.title !== undefined) {
+      fields.push(`title = $${i++}`);
+      values.push(data.title);
+    }
+    if (data.status !== undefined) {
+      fields.push(`status = $${i++}`);
+      values.push(data.status);
+    }
+
+    if (fields.length === 0) return await this.findById(id);
+
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+
+    const result = await query(
+      `UPDATE documents SET ${fields.join(', ')} WHERE id = $${i} RETURNING *`,
+      values
+    );
+    return result.rows[0] || null;
+  },
+
+  async delete(id: string): Promise<boolean> {
+    const result = await query('DELETE FROM documents WHERE id = $1', [id]);
+    return (result.rowCount || 0) > 0;
+  },
+};

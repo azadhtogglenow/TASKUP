@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: docdb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: docuser
+      POSTGRES_PASSWORD: docpass123
+      POSTGRES_DB: docdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+
+  app:
+    build: .
+    container_name: docapp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: docuser
+      DB_PASSWORD: docpass123
+      DB_NAME: docdb
+      DATABASE_URL: postgresql://docuser:docpass123@postgres:5432/docdb
+      JWT_SECRET: your-super-secret-key-change-in-production
+      JWT_EXPIRES_IN: 24h
+      PORT: 3000
+      NODE_ENV: production
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
