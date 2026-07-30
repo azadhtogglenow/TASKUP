@@ -12,6 +12,9 @@ build/
 .env.test.local
 .env.production.local
 
+# Drizzle
+drizzle/migrations/meta/
+
 # Logs
 logs/
 *.log

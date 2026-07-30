@@ -1,98 +1,156 @@
-import type { Request, Response } from "express";
-import { z } from "zod";
-import { documentModel } from "../models/document-model";
-import { documentSchema } from "../schemas/document-schema";
+import { Request, Response, NextFunction } from 'express';
+import * as documentService from '../services/document-Service';
+import { ApiResponse, DocumentWithUser, DocumentListResponse } from '../types';
 
-export const createDocument = (req: Request, res: Response): void => {
-  const result = documentSchema.safeParse(req.body);
 
-  if (!result.success) {
-    res.status(400).json({
-      message: "Validation Failed",
-      errors: result.error.flatten().fieldErrors,
+export async function createDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      const response: ApiResponse = {
+        success: false,
+        error: 'User not authenticated',
+      };
+      res.status(401).json(response);
+      return;
+    }
+
+    const document = await documentService.createDocument({
+      ...req.body,
+      userId: req.user.userId,
     });
-    return;
+
+    const response: ApiResponse<DocumentWithUser> = {
+      success: true,
+      data: document,
+      message: 'Document created successfully',
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
   }
+}
 
-  const document = documentModel.create(result.data);
+export async function getDocuments(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const query = req.query as {
+      page?: number;
+      limit?: number;
+      status?: 'draft' | 'published' | 'archived';
+      search?: string;
+      userId?: string;
+    };
+    const filterUserId = req.user?.role !== 'admin' ? req.user?.userId : query.userId;
 
-  res.status(201).json({
-    message: "Document uploaded successfully",
-    data: document,
-  });
-};
-
-export const getAllDocuments = (req: Request, res: Response): void => {
-  const documents = documentModel.getAll();
-  res.json({message:"All documents retrieved successfully", data: documents});
-};
-
-export const getDocumentById = (req: Request, res: Response): void => {
-  const parsedID = z.coerce.number().int().safeParse(req.params.id);
-
-  if(!parsedID.success){
-     res.status(400).json({message: 'id must be a positive integer' });
-     return;
-  }
-  const id = parsedID.data;
-
-  const document = documentModel.getById(id);
-
-  if (!document) {
-    res.status(404).json({
-      message: "Document not found",
+    const result = await documentService.getDocuments({
+      ...query,
+      userId: filterUserId,
     });
-    return;
+
+    const response: ApiResponse<DocumentListResponse> = {
+      success: true,
+      data: result,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
   }
+}
 
-  res.json(document);
-};
 
-export const updateDocument = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
+export async function getDocumentById(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      const response: ApiResponse = {
+        success: false,
+        error: 'User not authenticated',
+      };
+      res.status(401).json(response);
+      return;
+    }
 
-  if (!documentModel.exists(id)) {
-    res.status(404).json({
-      message: "Document not found",
-    });
-    return;
+    const document = await documentService.getDocumentById(req.params.id, req.user);
+
+    const response: ApiResponse<DocumentWithUser> = {
+      success: true,
+      data: document,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
   }
+}
 
-  const result = documentSchema.safeParse(req.body);
+export async function updateDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      const response: ApiResponse = {
+        success: false,
+        error: 'User not authenticated',
+      };
+      res.status(401).json(response);
+      return;
+    }
 
-  if (!result.success) {
-    res.status(400).json({
-      message: "Validation Failed",
-      errors: result.error.flatten().fieldErrors,
-    });
-    return;
+    const document = await documentService.updateDocument(
+      req.params.id,
+      req.body,
+      req.user
+    );
+
+    const response: ApiResponse<DocumentWithUser> = {
+      success: true,
+      data: document,
+      message: 'Document updated successfully',
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
   }
+}
+export async function deleteDocument(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      const response: ApiResponse = {
+        success: false,
+        error: 'User not authenticated',
+      };
+      res.status(401).json(response);
+      return;
+    }
 
-  const document = documentModel.update(id, result.data);
+    await documentService.deleteDocument(req.params.id, req.user);
 
-  res.json({
-    message: "Document updated successfully",
-    data: document,
-  });
-};
+    const response: ApiResponse = {
+      success: true,
+      message: 'Document deleted successfully',
+    };
 
-export const deleteDocument = (req: Request, res: Response): void => {
-  const parsedID = z.coerce.number().int().safeParse(req.params.id);
-
-  if(!parsedID.success){
-     res.status(400).json({message: 'id must be a positive integer' });
-     return;
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
   }
-  const id = parsedID.data;
-
-  if (!documentModel.exists(id)) {
-    res.status(404).json({
-      message: "Document not found",
-    });
-    return;
-  }
-
-  documentModel.delete(id);
-
-  res.send(204).send();
-};
+}
