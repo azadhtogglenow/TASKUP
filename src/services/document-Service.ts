@@ -189,10 +189,7 @@ export async function updateDocument(
 }
 
 
-export async function deleteDocument(
-  documentId: string,
-  user: JwtPayload
-): Promise<void> {
+export async function deleteDocument(documentId: string, user: JwtPayload): Promise<void> {
   const [existing] = await db
     .select()
     .from(documents)
