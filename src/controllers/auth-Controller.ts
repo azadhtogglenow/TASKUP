@@ -25,7 +25,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     const validatedData: LoginInput = loginSchema.parse(req.body);
     const result = await authService.loginUser(validatedData);
     
-    // Send response
+    
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -39,13 +39,12 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
 
 export async function getProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // req.user is set by authMiddleware
+    
     const userId = req.user!.userId;
     
-    // Call service
+    
     const result = await authService.getUserProfile(userId);
     
-    // Send response
     res.status(200).json({
       success: true,
       message: 'Profile retrieved successfully',
@@ -56,7 +55,6 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
   }
 }
 
-//
 
 export async function deleteUserCache(req: Request, res: Response, next: NextFunction): Promise<void> {
    const userId = req.user?.userId;
@@ -75,7 +73,7 @@ export async function deleteUserCache(req: Request, res: Response, next: NextFun
    });
 }
 
-//logout
+
 export async function logout(req: Request, res: Response, next: NextFunction): Promise<void> {
        res.status(200).json({
      success: true,
