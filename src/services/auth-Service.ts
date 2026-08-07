@@ -8,27 +8,20 @@ import { RegisterInput, LoginInput, AuthResponse } from '../types/index.js';
 
 
 async function findUserByEmail(email: string): Promise<User | null> {
-  
   const cacheKey = CacheKeys.userByEmail(email);
   const cachedUser = await getFromCache<User>(cacheKey);
-  
   if (cachedUser) {
     console.log(` Cache HIT for user: ${email}`);
     return cachedUser;
   }
-  
-  
   console.log(` Cache MISS for user: ${email}, querying database...`);
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  
   
   if (user) {
     await setInCache(cacheKey, user);
   }
-  
   return user || null;
 }
-
 
 async function findUserById(id: string): Promise<User | null> {
   
@@ -60,6 +53,7 @@ export async function deleteUserCache(user: { id: string; email: string; role: s
   await deleteFromCache(emailCacheKey);
   await deleteFromCache(idCacheKey);
 }
+
 
 
 export async function registerUser(input: RegisterInput): Promise<AuthResponse> {

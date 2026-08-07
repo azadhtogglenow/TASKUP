@@ -24,8 +24,6 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
   
     const validatedData: LoginInput = loginSchema.parse(req.body);
     const result = await authService.loginUser(validatedData);
-    
-    
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -41,10 +39,7 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
   try {
     
     const userId = req.user!.userId;
-    
-    
     const result = await authService.getUserProfile(userId);
-    
     res.status(200).json({
       success: true,
       message: 'Profile retrieved successfully',

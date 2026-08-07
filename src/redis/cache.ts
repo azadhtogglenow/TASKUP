@@ -41,8 +41,6 @@ export async function deleteByPattern(pattern: string): Promise<void> {
     console.error('Cache pattern delete error:', error);
   }
 }
-
-
 export const CacheKeys = {
   
   userById: (id: string) => `user:id:${id}`,

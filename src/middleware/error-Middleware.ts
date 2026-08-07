@@ -8,14 +8,8 @@ export interface AppError extends Error {
 }
 
 
-export function errorHandler(
-  err: AppError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
+export function errorHandler(err: AppError,req: Request,res: Response,next: NextFunction): void {
   console.error('Error:', err);
-  
 
   if (err instanceof ZodError) {
     res.status(400).json({
