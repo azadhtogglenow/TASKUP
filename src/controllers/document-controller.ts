@@ -1,98 +1,88 @@
-import type { Request, Response } from "express";
-import { z } from "zod";
-import { documentModel } from "../models/document-model";
-import { documentSchema } from "../schemas/document-schema";
+import { Request, Response, NextFunction } from 'express';
+import { createDocumentSchema, searchDocumentSchema, CreateDocumentInput, SearchDocumentInput } from '../types/index.js';
+import * as documentService from '../services/document-Service.js';
 
-export const createDocument = (req: Request, res: Response): void => {
-  const result = documentSchema.safeParse(req.body);
 
-  if (!result.success) {
-    res.status(400).json({
-      message: "Validation Failed",
-      errors: result.error.flatten().fieldErrors,
+export async function createDocument(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const validatedData: CreateDocumentInput = createDocumentSchema.parse(req.body);
+    const userId = req.user!.userId;
+    const result = await documentService.createDocument(userId, validatedData);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Document created successfully',
+      data: result,
     });
-    return;
+  } catch (error) {
+    next(error);
   }
+}
 
-  const document = documentModel.create(result.data);
 
-  res.status(201).json({
-    message: "Document uploaded successfully",
-    data: document,
-  });
-};
-
-export const getAllDocuments = (req: Request, res: Response): void => {
-  const documents = documentModel.getAll();
-  res.json({message:"All documents retrieved successfully", data: documents});
-};
-
-export const getDocumentById = (req: Request, res: Response): void => {
-  const parsedID = z.coerce.number().int().safeParse(req.params.id);
-
-  if(!parsedID.success){
-     res.status(400).json({message: 'id must be a positive integer' });
-     return;
-  }
-  const id = parsedID.data;
-
-  const document = documentModel.getById(id);
-
-  if (!document) {
-    res.status(404).json({
-      message: "Document not found",
+export async function getDocuments(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const result = await documentService.getUserDocuments(userId);
+    res.status(200).json({
+      success: true,
+      message: 'Documents retrieved successfully',
+      data: result,
     });
-    return;
+  } catch (error) {
+    next(error);
   }
+}
 
-  res.json(document);
-};
 
-export const updateDocument = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
-
-  if (!documentModel.exists(id)) {
-    res.status(404).json({
-      message: "Document not found",
+export async function getDocument(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const docId = req.params.id;
+    const userId = req.user!.userId;
+    
+    const result = await documentService.getDocumentById(docId, userId);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Document retrieved successfully',
+      data: result,
     });
-    return;
+  } catch (error) {
+    next(error);
   }
+}
 
-  const result = documentSchema.safeParse(req.body);
 
-  if (!result.success) {
-    res.status(400).json({
-      message: "Validation Failed",
-      errors: result.error.flatten().fieldErrors,
+export async function searchDocuments(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const validatedData: SearchDocumentInput = searchDocumentSchema.parse(req.body);
+    const userId = req.user!.userId;
+    
+    const result = await documentService.searchDocuments(userId, validatedData);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Search completed successfully',
+      data: result,
     });
-    return;
+  } catch (error) {
+    next(error);
   }
+}
 
-  const document = documentModel.update(id, result.data);
 
-  res.json({
-    message: "Document updated successfully",
-    data: document,
-  });
-};
-
-export const deleteDocument = (req: Request, res: Response): void => {
-  const parsedID = z.coerce.number().int().safeParse(req.params.id);
-
-  if(!parsedID.success){
-     res.status(400).json({message: 'id must be a positive integer' });
-     return;
-  }
-  const id = parsedID.data;
-
-  if (!documentModel.exists(id)) {
-    res.status(404).json({
-      message: "Document not found",
+export async function deleteDocument(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const docId = req.params.id;
+    const userId = req.user!.userId;
+    
+    await documentService.deleteDocument(docId, userId);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Document deleted successfully',
     });
-    return;
+  } catch (error) {
+    next(error);
   }
-
-  documentModel.delete(id);
-
-  res.send(204).send();
-};
+}
