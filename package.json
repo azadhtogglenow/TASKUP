@@ -1,25 +1,66 @@
 {
   "name": "document-api",
   "version": "1.0.0",
-  "description": "Document Management API",
-  "main": "dist/server.js",
+  "description": "Document processing API with queue-based architecture",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/server.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
-  },
-   "engines": {
-    "node": ">=20"
+    "start": "node dist/index.js",
+    "worker": "tsx src/queue/index.ts",
+    "worker:build": "node dist/queue/index.js",
+    "setup": "tsx src/db/migrator.ts",
+    "db:generate": "drizzle-kit generate --config=./drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=./drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config=./drizzle.config.ts",
+    "db:push": "drizzle-kit push --config=./drizzle.config.ts",
+    "test": "vitest"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "zod": "^3.25.76"
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@bull-board/api": "^5.23.0",
+    "@bull-board/express": "^5.15.0",
+    "@google/genai": "^2.16.0",
+    "@langchain/anthropic": "^0.3.0",
+    "@langchain/aws": "^0.1.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/openai": "^0.3.0",
+    "@xenova/transformers": "^2.17.2",
+    "bullmq": "^5.81.3",
+    "cors": "^2.8.5",
+    "cron-parser": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.45.2",
+    "express": "^4.21.0",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.4.1",
+    "langchain": "^0.3.0",
+    "mammoth": "^1.8.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.13.0",
+    "pgvector": "^0.2.0",
+    "sharp": "^0.35.3",
+    "uuid": "^11.0.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/node": "^20.10.0",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.2"
+    "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.5.0",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/pg": "^8.11.6",
+    "@types/uuid": "^10.0.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  },
+  "overrides": {
+    "@langchain/core": "^0.3.0",
+    "sharp": "$sharp"
   }
 }
