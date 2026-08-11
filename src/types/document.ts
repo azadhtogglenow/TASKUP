@@ -35,7 +35,6 @@ export interface DocumentStatusResponse {
   updatedAt: Date;
 }
 
-
 export interface DocumentChunk {
   id: string;           
   documentId: string;   

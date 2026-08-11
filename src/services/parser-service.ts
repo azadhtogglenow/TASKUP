@@ -68,7 +68,6 @@ export class ParserService {
       return text;
     } catch (error: any) {
       logger.error(`PDF parsing error: ${error.message || error}`);
-      // Throw a structured error that your queue processor can catch cleanly
       throw new Error(`MALFORMED_PDF: ${error.message || error}`);
     }
   }

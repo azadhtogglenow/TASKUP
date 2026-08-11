@@ -13,20 +13,17 @@ export class VectorService {
     logger.info(`Storing ${chunks.length} chunks for document ${documentId}...`);
 
     try {
-      // Prepare the data for insertion
       const chunkData = chunks.map((content, index) => ({
         documentId,
         content,
         chunkIndex: index,
         embedding: embeddings[index],
-        // Store some metadata
         metadata: {
           charCount: content.length,
           wordCount: content.split(/\s+/).length,
         },
       }));
 
-      // Insert in batches (PostgreSQL has limits on single inserts)
       const batchSize = 100;
       for (let i = 0; i < chunkData.length; i += batchSize) {
         const batch = chunkData.slice(i, i + batchSize);
@@ -52,12 +49,7 @@ export class VectorService {
     logger.info(`Searching for similar chunks (limit: ${limit}, threshold: ${threshold})...`);
 
     try {
-      // Convert embedding array to string for SQL
       const embeddingStr = `[${queryEmbedding.join(",")}]`;
-
-      // Use pg_vector's cosine distance operator (<=>)
-      // Lower distance = more similar
-      // 1 - distance = similarity score
       const results = await db.execute(sql`
         SELECT 
           id,
