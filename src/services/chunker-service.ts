@@ -1,26 +1,21 @@
-
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { config } from "../config";
-import { logger } from "../utils/logger";
+import { config } from "../config/index.js";
+import { logger } from "../utils/logger.js";
 
 export class ChunkerService {
 
   private static splitter: RecursiveCharacterTextSplitter | null = null;
-
-  // ----------------------------------------
-  // Get or Create Splitter
-  // ----------------------------------------
   private static getSplitter(): RecursiveCharacterTextSplitter {
     if (!this.splitter) {
       this.splitter = new RecursiveCharacterTextSplitter({
         chunkSize: config.processing.chunkSize,
         chunkOverlap: config.processing.chunkOverlap,
         separators: [
-          "\n\n",  // First try splitting on double newlines (paragraphs)
-          "\n",    // Then single newlines (lines)
-          ". ",    // Then sentences
-          " ",     // Then words
-          "",      // Finally, character-by-character
+          "\n\n",  
+          "\n",    
+          ". ",    
+          " ",    
+          "",      
         ],
       });
     }
@@ -35,7 +30,7 @@ export class ChunkerService {
       
       logger.info(`Split into ${chunks.length} chunks`);
       
-      // Log some stats about the chunks
+      
       if (chunks.length > 0) {
         const sizes = chunks.map((c) => c.length);
         const avgSize = Math.round(sizes.reduce((a, b) => a + b, 0) / sizes.length);

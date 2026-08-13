@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger";
+import { logger } from "../utils/logger.js";
 
 let pdfParse: (buffer: Buffer, options?: any) => Promise<{ text: string; numpages: number }>;
 let mammoth: {
@@ -55,7 +55,7 @@ export class ParserService {
               return textContent.items.map((item: any) => item.str).join(' ');
             })
             .catch((err: any) => {
-              logger.warn(`      Warning processing individual page content: ${err.message}`);
+              logger.warn(`Warning processing individual page content: ${err.message}`);
               return '';
             });
         }

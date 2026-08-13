@@ -1,7 +1,7 @@
-import { Queue } from "bullmq";
-import { redisConnection } from "../config/redis";
-import { DOCUMENT_QUEUE_NAME, DocumentProcessingJobData } from "../types/job";
-import { logger } from "../utils/logger";
+import { Backoffs, delay, Queue } from "bullmq";
+import { redisConnection } from "../config/redis.js";
+import { DOCUMENT_QUEUE_NAME, DocumentProcessingJobData } from "../types/job.js";
+import { logger } from "../utils/logger.js";
 
 const documentQueue = new Queue(DOCUMENT_QUEUE_NAME, {
   connection: redisConnection,
@@ -26,6 +26,11 @@ export async function addDocumentJob(data: DocumentProcessingJobData): Promise<s
   
   const job = await documentQueue.add("process-document", data, {
     jobId: `doc-${data.documentId}`,
+    attempts : 3,
+    backoff :{
+      type : 'exponential',
+      delay : 1000,
+    }
   });
   
   logger.info(`Job added with ID: ${job.id}`);

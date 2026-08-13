@@ -2,12 +2,13 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import { config } from "./config";
-import { authMiddleware } from "./middleware/auth";
-import { errorHandler, notFoundHandler } from "./middleware/error-handler";
-import uploadRoutes from "./routes/upload-routes";
-import statusRoutes from "./routes/status-routes";
-import { logger } from "./utils/logger";
+import { config } from "./config/index.js";
+import { authMiddleware } from "./middleware/auth.js";
+import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
+import uploadRoutes from "./routes/upload-routes.js";
+import statusRoutes from "./routes/status-routes.js";
+import searchRoutes from "./routes/search-routes.js";
+import { logger } from "./utils/logger.js";
 
 const app = express();
 
@@ -18,7 +19,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "X-API-Key"],
 }));
 
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 if (config.server.nodeEnv === "development") {
@@ -37,6 +38,7 @@ app.get("/health", (req, res) => {
 
 app.use("/api/upload", authMiddleware, uploadRoutes);
 app.use("/api/status", authMiddleware, statusRoutes);
+app.use("/api",searchRoutes);
 
 export async function setupBullBoard() {
   try {

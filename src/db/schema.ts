@@ -1,13 +1,5 @@
 import { Table } from "drizzle-orm"
-import {
-  pgTable,
-  uuid,
-  varchar,
-  integer,
-  text,
-  timestamp,
-  jsonb,
-} from "drizzle-orm/pg-core";
+import {pgTable,uuid,varchar,integer,text,timestamp,jsonb,} from "drizzle-orm/pg-core";
 import { vector } from "drizzle-orm/pg-core";
 export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),

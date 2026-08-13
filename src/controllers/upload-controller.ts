@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { v4 as uuidv4 } from "uuid";
-import { db } from "../db";
-import { documents } from "../db/schema";
-import { addDocumentJob } from "../queue/producer";
-import { StorageService } from "../services/storage-service";
-import { AppError } from "../middleware/error-handler";
-import { logger } from "../utils/logger";
-import { UploadResponse, FileType } from "../types/document";
-import { VectorService } from "@/services/vector-service";
+import { db } from "../db/index.js";
+import { documents } from "../db/schema.js";
+import { addDocumentJob } from "../queue/producer.js";
+import { StorageService } from "../services/storage-service.js";
+import { AppError } from "../middleware/error-handler.js";
+import { logger } from "../utils/logger.js";
+import { UploadResponse, FileType } from "../types/document.js";
+import { VectorService } from "@/services/vector-service.js";
 
 export async function uploadSingle(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

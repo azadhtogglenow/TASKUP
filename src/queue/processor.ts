@@ -1,14 +1,14 @@
 import { Job } from "bullmq";
 import { eq } from "drizzle-orm";
-import { db } from "../db"; 
-import { documents } from "../db/schema"; 
-import { DocumentProcessingJobData, DocumentProcessingJobResult, DocumentProcessingProgress } from "../types/job";
-import { logger } from "../utils/logger";
-import { StorageService } from "../services/storage-service";
-import { ParserService } from "../services/parser-service";
-import { ChunkerService } from "../services/chunker-service";
-import { EmbeddingService } from "../services/embedding-service";
-import { VectorService } from "../services/vector-service";
+import { db } from "../db/index.js"; 
+import { documents } from "../db/schema.js"; 
+import { DocumentProcessingJobData, DocumentProcessingJobResult, DocumentProcessingProgress } from "../types/job.js";
+import { logger } from "../utils/logger.js";
+import { StorageService } from "../services/storage-service.js";
+import { ParserService } from "../services/parser-service.js";
+import { ChunkerService } from "../services/chunker-service.js";
+import { EmbeddingService } from "../services/embedding-service.js";
+import { VectorService } from "../services/vector-service.js";
 
 export async function processDocument(data: DocumentProcessingJobData,job: Job<DocumentProcessingJobData, DocumentProcessingJobResult, string>
 ): Promise<DocumentProcessingJobResult> {
@@ -148,10 +148,7 @@ export async function processDocument(data: DocumentProcessingJobData,job: Job<D
 }
 
 
-function updateProgress(
-  job: Job,
-  progress: DocumentProcessingProgress
-): void {
+function updateProgress(job: Job,progress: DocumentProcessingProgress): void {
   job.updateProgress(progress).catch(err => logger.warn(`Failed updating job execution metrics: ${err.message}`));
 }
 }

@@ -1,9 +1,9 @@
-import { config } from "./config";
-import { testConnection, closePool } from "./db";
-import { closeRedisConnection } from "./config/redis";
-import app from "./app";
-import { setupBullBoard } from "./app";
-import { logger } from "./utils/logger";
+import { config } from "./config/index.js";
+import { testConnection, closePool } from "./db/index.js";
+import { closeRedisConnection } from "./config/redis.js";
+import app from "./app.js";
+import { setupBullBoard } from "./app.js";
+import { logger } from "./utils/logger.js";
 import { Server } from "tls";
 
 async function startServer() {

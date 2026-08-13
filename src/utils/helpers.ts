@@ -1,4 +1,4 @@
-import { FileType } from "../types/document";
+import { FileType } from "../types/document.js";
 export function getFileType(filename: string): FileType | null {
   const ext = filename.toLowerCase().split(".").pop();
   

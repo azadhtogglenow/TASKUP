@@ -1,7 +1,7 @@
 import { GoogleGenAI} from "@google/genai";
 import * as fs from "fs";
-import { config } from "../config";
-import { logger } from "../utils/logger";
+import { config } from "../config/index.js";
+import { logger } from "../utils/logger.js";
 import dotenv from 'dotenv';
 dotenv.config()
 
@@ -38,8 +38,6 @@ private static getClient(): GoogleGenAI {
         const values = emb.values || [];
         return values.slice(0, config.embedding.dimension);
       });
-
-      // Callback triggers once at the end since it's a unified batch operation
       if (onProgress) {
         onProgress(texts.length);
       }
@@ -58,7 +56,7 @@ private static getClient(): GoogleGenAI {
     const aiClient = this.getClient();
 
     try {
-      logger.info(`📡 Sending raw PDF to Gemini for native embedding...`);
+      logger.info(` Sending raw PDF to Gemini for native embedding...`);
       
       const pdfPart = {
         inlineData: {
@@ -88,8 +86,6 @@ private static getClient(): GoogleGenAI {
   static isLoaded(): boolean {
     return this.ai !== null;
   }
-
-  // Initializes the client immediately to warm up connections
   static async preload(): Promise<void> {
     this.getClient();
     logger.info(" Gemini Embedding client initialized!");

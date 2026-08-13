@@ -1,6 +1,6 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { s3Client, S3_BUCKET } from "../config/s3";
-import { logger } from "../utils/logger";
+import { s3Client, S3_BUCKET } from "../config/s3.js";
+import { logger } from "../utils/logger.js";
 import { v4 as uuidv4 } from "uuid";
 
 export class StorageService {

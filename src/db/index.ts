@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import * as schema from "../db/schema";
-import { config } from "../config";
+import * as schema from "../db/schema.js";
+import { config } from "../config/index.js";
 export const pool = new Pool({
   host: config.database.host,
   port: config.database.port,

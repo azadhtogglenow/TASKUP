@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import * as uploadController from "../controllers/upload-controller";
+import * as uploadController from "../controllers/upload-controller.js";
 
 const router = Router();
 const upload = multer({
@@ -20,6 +20,6 @@ const upload = multer({
   },
 });
 
-// POST /api/upload 
+
 router.post("/", upload.single("file"), uploadController.uploadSingle);
 export default router;

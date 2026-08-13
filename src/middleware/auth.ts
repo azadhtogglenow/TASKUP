@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { config } from "../config";
-import { logger } from "../utils/logger";
+import { config } from "../config/index.js";
+import { logger } from "../utils/logger.js";
 
 declare global {
   namespace Express {

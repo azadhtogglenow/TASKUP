@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "../db";
-import { documents, documentChunks } from "../db/schema";
+import { db } from "../db/index.js";
+import { documents, documentChunks } from "../db/schema.js";
 import { eq, desc, sql } from "drizzle-orm";
-import { AppError } from "../middleware/error-handler";
-import { logger } from "../utils/logger";
-import { DocumentStatusResponse } from "../types/document";
+import { AppError } from "../middleware/error-handler.js";
+import { logger } from "../utils/logger.js";
+import { DocumentStatusResponse } from "../types/document.js";
 
 
 export async function getStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -87,7 +87,7 @@ export async function getChunks(req: Request, res: Response, next: NextFunction)
   try {
     const { id } = req.params;
 
-    // Check if document exists
+    
     const docResult = await db
       .select({ id: documents.id, status: documents.status })
       .from(documents)
