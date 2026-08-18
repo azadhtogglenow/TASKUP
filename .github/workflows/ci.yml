@@ -35,27 +35,29 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          
-      minio:
-        image: minio/minio:RELEASE.2024-01-18T22-51-28Z
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        ports:
-          - 9000:9000
-          - 9001:9001
-        options: >-
-          --entrypoint "/bin/sh"
-          --health-cmd "mc ready local"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          -c "minio server /data"
-
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+
+      # Start MinIO cleanly as a standard step to avoid option parsing bugs
+      - name: Start MinIO Service
+        run: |
+          docker run -d \
+            --name minio \
+            --network ${{ job.container.network || 'bridge' }} \
+            -p 9000:9000 \
+            -p 9001:9001 \
+            -e "MINIO_ROOT_USER=minioadmin" \
+            -e "MINIO_ROOT_PASSWORD=minioadmin" \
+            minio/minio:RELEASE.2024-01-18T22-51-28Z server /data
+
+      # Wait explicitly until MinIO is healthy and ready to accept traffic
+      - name: Wait for MinIO readiness
+        run: |
+          echo "Waiting for MinIO to be ready..."
+          docker exec minio mc ready local
+
       - name: Set up Node.js environment
         uses: actions/setup-node@v4
         with:
