@@ -35,7 +35,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
       minio:
         image: minio/minio:latest-cicd
         env:
@@ -45,21 +44,14 @@ jobs:
           - 9000:9000
           - 9001:9001
         options: >-
-          --entrypoint "minio"
+          --entrypoint "minio server /data"
           --health-cmd "mc ready local"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        args:
-          - "server"
-          - "/data"
-        
-
-
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-
       - name: Set up Node.js environment
         uses: actions/setup-node@v4
         with:
