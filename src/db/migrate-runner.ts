@@ -13,7 +13,7 @@ async function main() {
     process.exit(1);
   } finally {
     await pool.end();
-    console.log("🔌 Database pool closed safely.");
+    console.log(" Database pool closed safely.");
   }
 }
 
