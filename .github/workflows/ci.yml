@@ -69,15 +69,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # FIX 1: Proactively enable vector processing capabilities BEFORE running migrations
-      - name: Initialize Database Extensions
-        run: |
-          docker exec -i $(docker ps -qf "ancestor=pgvector/pgvector:pg17") psql -U postgres -d documents -c "CREATE EXTENSION IF NOT EXISTS vector;"
-
-      - name: Run database migrations
-        run: npm run db:push
-
-      # FIX 2: Export variables to $GITHUB_ENV so Vitest and your test server can read them
       - name: Set Environment Variables for Pipeline Tasks
         run: |
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/documents" >> $GITHUB_ENV
@@ -91,6 +82,13 @@ jobs:
           echo "API_KEY=4a2b8c9d1e0f3a5b7c8d9e0f1a2b3c4d" >> $GITHUB_ENV
           echo "X_API_KEY=4a2b8c9d1e0f3a5b7c8d9e0f1a2b3c4d" >> $GITHUB_ENV
           echo "APP_API_KEY=4a2b8c9d1e0f3a5b7c8d9e0f1a2b3c4d" >> $GITHUB_ENV
+
+      - name: Initialize Database Extensions
+        run: |
+          docker exec -i $(docker ps -qf "ancestor=pgvector/pgvector:pg17") psql -U postgres -d documents -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+      - name: Run database migrations
+        run: npm run db:push
 
       - name: Execute all tests
         run: npm run test:all
