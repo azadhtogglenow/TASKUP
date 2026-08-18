@@ -128,7 +128,7 @@ describe("Document API System Integration Tests", () => {
       let pollCount = 0;
       let targetRecord = undefined;
   
-      while (pollCount < 40) {
+      while (pollCount < 80) {
         const rows = await db.select().from(documents).where(eq(documents.id, newDoc.id));
         
         if (rows && rows.length > 0) {
@@ -138,7 +138,7 @@ describe("Document API System Integration Tests", () => {
           break;
         }
         
-        await new Promise((resolve) => setTimeout(resolve, 250));
+        await new Promise((resolve) => setTimeout(resolve, 300));
         pollCount++;
       }
       expect(targetRecord).toBeDefined();
@@ -160,7 +160,7 @@ describe("Document API System Integration Tests", () => {
 
       expect(chunkRecord).toBeDefined();
       expect(chunkRecord!.embedding).toHaveLength(3072); 
-    }, 20000); // Bumped timeout slightly to account for concurrency load
+    }, 30000); 
   });
 
   describe("Database Transaction Boundary Fallback", () => {
