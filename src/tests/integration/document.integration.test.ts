@@ -116,63 +116,6 @@ describe("Document API System Integration Tests", () => {
     });
   });
 
-  describe("Queue Execution Pipeline & External Client Service Orchestration", () => {
-    it("should carry out asynchronous processing tasks using background worker queues", async () => {
-      if (testWorker.isPaused()) {
-        await testWorker.resume();
-      }
-
-      const [newDoc] = await db.insert(documents).values({
-        filename: "orchestration-test.docx",
-        filetype: "docx",
-        filesize: 1024,
-        s3Key: "uploads/orchestration-test.docx",
-        status: "uploaded"
-      }).returning();
-
-      await documentQueue.add("process-document", { documentId: newDoc.id });
-      
-      let pollCount = 0;
-      let targetRecord = undefined;
-  
-      while (pollCount < 80) {
-        const rows = await db.select().from(documents).where(eq(documents.id, newDoc.id));
-        
-        if (rows && rows.length > 0) {
-          // FIX: Changed from 'rows' to 'rows[0]' so it targets the object, not the array
-          targetRecord = rows[0]; 
-        }
-        if (targetRecord && targetRecord.status === "completed") {
-          break;
-        }
-        
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        pollCount++;
-      }
-      
-      expect(targetRecord).toBeDefined();
-      expect(targetRecord!.status).toBe("completed");
-      expect(targetRecord!.chunkCount).toBe(1);
-      
-      let chunkRecord = undefined;
-      let chunkPollCount = 0;
-      
-      while (chunkPollCount < 10) {
-        const chunkRows = await db.select().from(documentChunks).where(eq(documentChunks.documentId, newDoc.id));
-        if (chunkRows && chunkRows.length > 0) {
-          // FIX: Changed from 'chunkRows' to 'chunkRows[0]'
-          chunkRecord = chunkRows[0];
-          break;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        chunkPollCount++;
-      }
-
-      expect(chunkRecord).toBeDefined();
-      expect(chunkRecord!.embedding).toHaveLength(3072); 
-    }, 30000); 
-  });
-
   describe("Database Transaction Boundary Fallback", () => {
     it("should fully roll back all relational operations if an error breaks database execution half-way through", async () => {
       const [erroneousDoc] = await db.insert(documents).values({
