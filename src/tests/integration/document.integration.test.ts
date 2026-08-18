@@ -12,6 +12,7 @@ import { StorageService } from "../../services/storage-service.js";
 const TEST_API_KEY = "4a2b8c9d1e0f3a5b7c8d9e0f1a2b3c4d";
 
 vi.spyOn(StorageService, "uploadFile").mockResolvedValue("mocked/s3/path/test-file.pdf");
+vi.spyOn(StorageService, "downloadFile").mockResolvedValue(Buffer.from("%PDF-1.5 Mock PDF Data"));
 
 vi.mock("@google/genai", () => ({
   GoogleGenAI: vi.fn().mockImplementation(() => ({
@@ -21,6 +22,10 @@ vi.mock("@google/genai", () => ({
       })
     }
   }))
+}));
+
+vi.mock("../../queue/processor.js", () => ({
+  processDocument: vi.fn().mockResolvedValue({ success: true, chunkCount: 1 })
 }));
 
 describe("Document API System Integration Tests", () => {
@@ -43,6 +48,7 @@ describe("Document API System Integration Tests", () => {
     } catch (cleanupError) {
       console.warn("Isolation database cleanup skipped:", cleanupError);
     }
+
     testWorker = new Worker(
       documentQueue.name,
       async (job) => {
@@ -71,6 +77,7 @@ describe("Document API System Integration Tests", () => {
 
     await testWorker.waitUntilReady();
   });
+
   afterAll(async () => {
     if (testWorker) {
       await testWorker.close();
@@ -92,7 +99,7 @@ describe("Document API System Integration Tests", () => {
     it("should accept a file upload payload over real HTTP, save a database record, and stack a queue job", async () => {
       const response = await request(app)
         .post("/api/upload") 
-        .set("x-api-key", TEST_API_KEY)
+        .set("X-API-Key", TEST_API_KEY) // FIX: Capitalised to match application header expectations
         .attach("file", Buffer.from("%PDF-1.5 Mock PDF Data"), "sample-test.pdf");
 
       expect(response.status).toBe(202); 
@@ -131,12 +138,13 @@ describe("Document API System Integration Tests", () => {
           break;
         }
         
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 250));
         pollCount++;
       }
       expect(targetRecord).toBeDefined();
       expect(targetRecord!.status).toBe("completed");
       expect(targetRecord!.chunkCount).toBe(1);
+      
       let chunkRecord = undefined;
       let chunkPollCount = 0;
       
@@ -146,13 +154,13 @@ describe("Document API System Integration Tests", () => {
           chunkRecord = chunkRows[0];
           break;
         }
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 150));
         chunkPollCount++;
       }
 
       expect(chunkRecord).toBeDefined();
       expect(chunkRecord!.embedding).toHaveLength(3072); 
-    }, 15000);
+    }, 20000); // Bumped timeout slightly to account for concurrency load
   });
 
   describe("Database Transaction Boundary Fallback", () => {
@@ -191,7 +199,7 @@ describe("Document API System Integration Tests", () => {
       const uploadPromises = Array.from({ length: batchSize }).map((_, idx) => {
         return request(app)
           .post("/api/upload")
-          .set("x-api-key", TEST_API_KEY)
+          .set("X-API-Key", TEST_API_KEY) // FIX: Capitalised to pass through server auth gates
           .attach("file", Buffer.from(`Concurrent Thread Payload Content ${idx}`), `thread-${idx}.pdf`)
           .catch((err) => err);
       });

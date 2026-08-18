@@ -22,7 +22,7 @@ CREATE TABLE "documents" (
 );
 --> statement-breakpoint
 ALTER TABLE "document_chunks" ADD CONSTRAINT "document_chunks_document_id_documents_id_fk" FOREIGN KEY ("document_id") REFERENCES "public"."documents"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "document_chunks_document_id_idx" ON "document_chunks" USING btree ("document_id");--> statement-breakpoint
-CREATE INDEX "document_chunks_embedding_ivfflat_idx" ON "document_chunks" USING ivfflat ("embedding" halfvec_cosine_ops);--> statement-breakpoint
+CREATE INDEX "doc_chunks_doc_id_idx" ON "document_chunks" USING btree ("document_id");--> statement-breakpoint
+CREATE INDEX "doc_chunks_embed_cos_idx" ON "document_chunks" USING ivfflat ("embedding" halfvec_cosine_ops);--> statement-breakpoint
 CREATE INDEX "documents_status_idx" ON "documents" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "documents_created_at_idx" ON "documents" USING btree ("created_at");

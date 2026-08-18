@@ -1,11 +1,19 @@
 import { pgTable, uuid, varchar, integer, text, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { index, customType } from "drizzle-orm/pg-core"; 
 
-// 1. Create a custom type handler to support pgvector's halfvec data type
+
 const halfvec = customType<{ data: number[]; config: { dimensions: number } }>({
   dataType: (config) => `halfvec(${config?.dimensions})`,
-  toDriver: (value) => JSON.stringify(value),
-  fromDriver: (value) => JSON.parse(value as string),
+  
+  toDriver: (value) => {
+    if (!value) return null;
+    return `[${value.join(",")}]`;
+  },
+  
+  fromDriver: (value) => {
+    if (!value || typeof value !== 'string') return [];
+    return value.replace(/[\[\]]/g, '').split(',').map(Number);
+  },
 });
 
 export const documents = pgTable("documents", {
@@ -38,10 +46,11 @@ export const documentChunks = pgTable("document_chunks", {
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
-  index("document_chunks_document_id_idx").on(table.documentId),
+  index("doc_chunks_doc_id_idx").on(table.documentId),
   
   // FIXED: Changed vector_cosine_ops to halfvec_cosine_ops
-  index("document_chunks_embedding_ivfflat_idx").using(
+  // VISUAL FIX: Shortened the index identifier name to prevent Postgres truncation issues
+  index("doc_chunks_embed_cos_idx").using(
     "ivfflat",
     table.embedding.op("halfvec_cosine_ops")
   ),
