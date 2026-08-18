@@ -48,8 +48,6 @@ export const documentChunks = pgTable("document_chunks", {
 }, (table) => [
   index("doc_chunks_doc_id_idx").on(table.documentId),
   
-  // FIXED: Changed vector_cosine_ops to halfvec_cosine_ops
-  // VISUAL FIX: Shortened the index identifier name to prevent Postgres truncation issues
   index("doc_chunks_embed_cos_idx").using(
     "ivfflat",
     table.embedding.op("halfvec_cosine_ops")
