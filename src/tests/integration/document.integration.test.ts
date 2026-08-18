@@ -72,7 +72,11 @@ describe("Document API System Integration Tests", () => {
           console.error("Background worker transaction failed safely:", workerError);
         }
       },
-      { connection: redisConnection }
+      { 
+        connection: redisConnection,
+        // FIX: Forces BullMQ to instantly pick up jobs without relying on separate cluster events
+        drainDelay: 1 
+      }
     );
 
     await testWorker.waitUntilReady();
@@ -99,7 +103,7 @@ describe("Document API System Integration Tests", () => {
     it("should accept a file upload payload over real HTTP, save a database record, and stack a queue job", async () => {
       const response = await request(app)
         .post("/api/upload") 
-        .set("X-API-Key", TEST_API_KEY) // FIX: Capitalised to match application header expectations
+        .set("X-API-Key", TEST_API_KEY) 
         .attach("file", Buffer.from("%PDF-1.5 Mock PDF Data"), "sample-test.pdf");
 
       expect(response.status).toBe(202); 
@@ -115,6 +119,11 @@ describe("Document API System Integration Tests", () => {
 
   describe("Queue Execution Pipeline & External Client Service Orchestration", () => {
     it("should carry out asynchronous processing tasks using background worker queues", async () => {
+      // FIX: Double check worker is active and listening for this specific test block
+      if (testWorker.isPaused()) {
+        await testWorker.resume();
+      }
+
       const [newDoc] = await db.insert(documents).values({
         filename: "orchestration-test.docx",
         filetype: "docx",
@@ -199,7 +208,7 @@ describe("Document API System Integration Tests", () => {
       const uploadPromises = Array.from({ length: batchSize }).map((_, idx) => {
         return request(app)
           .post("/api/upload")
-          .set("X-API-Key", TEST_API_KEY) // FIX: Capitalised to pass through server auth gates
+          .set("X-API-Key", TEST_API_KEY) 
           .attach("file", Buffer.from(`Concurrent Thread Payload Content ${idx}`), `thread-${idx}.pdf`)
           .catch((err) => err);
       });
