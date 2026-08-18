@@ -26,10 +26,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
-# Cache
-.cache/
-.eslintcache
-
-# Ignore Drizzle's internal snapshot tracker
-drizzle/meta/
