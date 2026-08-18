@@ -1,6 +1,13 @@
-import { Table } from "drizzle-orm"
-import {pgTable,uuid,varchar,integer,text,timestamp,jsonb,} from "drizzle-orm/pg-core";
-import { vector } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, integer, text, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { index, customType } from "drizzle-orm/pg-core"; 
+
+// 1. Create a custom type handler to support pgvector's halfvec data type
+const halfvec = customType<{ data: number[]; config: { dimensions: number } }>({
+  dataType: (config) => `halfvec(${config?.dimensions})`,
+  toDriver: (value) => JSON.stringify(value),
+  fromDriver: (value) => JSON.parse(value as string),
+});
+
 export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),
   filename: varchar("filename", { length: 255 }).notNull(),
@@ -12,7 +19,10 @@ export const documents = pgTable("documents", {
   chunkCount: integer("chunk_count"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index("documents_status_idx").on(table.status),
+  index("documents_created_at_idx").on(table.createdAt),
+]);
 
 export const documentChunks = pgTable("document_chunks", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -21,11 +31,21 @@ export const documentChunks = pgTable("document_chunks", {
   }),
   content: text("content").notNull(),
   chunkIndex: integer("chunk_index").notNull(),
-  embedding: vector("embedding", { dimensions: 3072 }),
+  
+  // 3072 dimensions allowed through half-precision storage
+  embedding: halfvec("embedding", { dimensions: 3072 }), 
+  
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
-
+}, (table) => [
+  index("document_chunks_document_id_idx").on(table.documentId),
+  
+  // FIXED: Changed vector_cosine_ops to halfvec_cosine_ops
+  index("document_chunks_embedding_ivfflat_idx").using(
+    "ivfflat",
+    table.embedding.op("halfvec_cosine_ops")
+  ),
+]);
 
 export type Document = typeof documents.$inferSelect;
 export type NewDocument = typeof documents.$inferInsert;
