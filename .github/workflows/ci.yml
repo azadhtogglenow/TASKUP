@@ -17,7 +17,8 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: documents_test
+          # Fix: Change from documents_test to documents to match your application configuration
+          POSTGRES_DB: documents
         ports:
           - 5432:5432
         options: >-
@@ -40,7 +41,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      # Start MinIO cleanly as a standard step to avoid option parsing bugs
       - name: Start MinIO Service
         run: |
           docker run -d \
@@ -52,11 +52,15 @@ jobs:
             -e "MINIO_ROOT_PASSWORD=minioadmin" \
             minio/minio:RELEASE.2024-01-18T22-51-28Z server /data
 
-      # Wait explicitly until MinIO is healthy and ready to accept traffic
-      - name: Wait for MinIO readiness
+      - name: Wait for MinIO readiness & create bucket
         run: |
           echo "Waiting for MinIO to be ready..."
           docker exec minio mc ready local
+          
+          # Proactively create the target storage bucket so file upload tasks don't crash
+          echo "Creating default application storage bucket..."
+          docker exec minio mc alias set myminio http://localhost:9000 minioadmin minioadmin
+          docker exec minio mc mb myminio/documents --ignore-existing
 
       - name: Set up Node.js environment
         uses: actions/setup-node@v4
@@ -71,7 +75,8 @@ jobs:
         run: npm run db:push
         env:
           NODE_ENV: test
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/documents_test
+          # Fix: Updated target database name in the connection string
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/documents
 
       - name: Execute all tests
         run: npm run test:all
@@ -80,7 +85,8 @@ jobs:
           POSTGRES_HOST: localhost
           REDIS_HOST: localhost
           S3_ENDPOINT: http://localhost:9000
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/documents_test
+          # Fix: Updated target database name in the connection string
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/documents
           REDIS_URL: redis://localhost:6379
           API_KEY: 4a2b8c9d1e0f3a5b7c8d9e0f1a2b3c4d
           S3_ACCESS_KEY: minioadmin
