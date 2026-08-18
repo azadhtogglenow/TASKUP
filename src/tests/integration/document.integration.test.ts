@@ -74,8 +74,7 @@ describe("Document API System Integration Tests", () => {
       },
       { 
         connection: redisConnection,
-        // FIX: Forces BullMQ to instantly pick up jobs without relying on separate cluster events
-        drainDelay: 1 
+        drainDelay: 1
       }
     );
 
@@ -119,7 +118,6 @@ describe("Document API System Integration Tests", () => {
 
   describe("Queue Execution Pipeline & External Client Service Orchestration", () => {
     it("should carry out asynchronous processing tasks using background worker queues", async () => {
-      // FIX: Double check worker is active and listening for this specific test block
       if (testWorker.isPaused()) {
         await testWorker.resume();
       }
@@ -141,6 +139,7 @@ describe("Document API System Integration Tests", () => {
         const rows = await db.select().from(documents).where(eq(documents.id, newDoc.id));
         
         if (rows && rows.length > 0) {
+          // FIX: Changed from 'rows' to 'rows[0]' so it targets the object, not the array
           targetRecord = rows[0]; 
         }
         if (targetRecord && targetRecord.status === "completed") {
@@ -150,6 +149,7 @@ describe("Document API System Integration Tests", () => {
         await new Promise((resolve) => setTimeout(resolve, 300));
         pollCount++;
       }
+      
       expect(targetRecord).toBeDefined();
       expect(targetRecord!.status).toBe("completed");
       expect(targetRecord!.chunkCount).toBe(1);
@@ -160,6 +160,7 @@ describe("Document API System Integration Tests", () => {
       while (chunkPollCount < 10) {
         const chunkRows = await db.select().from(documentChunks).where(eq(documentChunks.documentId, newDoc.id));
         if (chunkRows && chunkRows.length > 0) {
+          // FIX: Changed from 'chunkRows' to 'chunkRows[0]'
           chunkRecord = chunkRows[0];
           break;
         }
