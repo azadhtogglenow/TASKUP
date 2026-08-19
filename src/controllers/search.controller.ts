@@ -1,4 +1,3 @@
-//C:\Users\Azadh-desktop\OneDrive\Desktop\document-api\src\controllers\search.controller.ts
 import { Request, Response } from "express";
 import { EmbeddingService } from "../services/embedding-service.js";
 import { VectorService } from "../services/vector-service.js";
