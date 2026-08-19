@@ -28,8 +28,8 @@
     "@huggingface/inference": "^4.13.25",
     "@langchain/anthropic": "^0.3.0",
     "@langchain/aws": "^0.1.0",
-    "@langchain/core": "^0.3.0",
-    "@langchain/openai": "^0.3.0",
+    "@langchain/core": "^0.3.80",
+    "@langchain/openai": "^0.3.17",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/auto-instrumentations-node": "^0.79.0",
     "@opentelemetry/exporter-metrics-otlp-proto": "^0.221.0",
@@ -53,7 +53,8 @@
     "pgvector": "^0.2.0",
     "sharp": "^0.35.3",
     "uuid": "^11.0.5",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -67,7 +68,6 @@
     "@types/uuid": "^10.0.0",
     "@vitest/coverage-v8": "^2.1.9",
     "@vitest/ui": "^2.1.9",
-    "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
@@ -76,7 +76,7 @@
     "vitest": "^2.1.9"
   },
   "overrides": {
-    "@langchain/core": "^0.3.0",
+    "@langchain/core": "^0.3.80",
     "sharp": "$sharp"
   }
 }

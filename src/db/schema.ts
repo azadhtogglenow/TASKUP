@@ -1,18 +1,19 @@
 import { pgTable, uuid, varchar, integer, text, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { index, customType } from "drizzle-orm/pg-core"; 
-
-
 const halfvec = customType<{ data: number[]; config: { dimensions: number } }>({
   dataType: (config) => `halfvec(${config?.dimensions})`,
-  
   toDriver: (value) => {
-    if (!value) return null;
-    return `[${value.join(",")}]`;
+    if (!value || !Array.isArray(value)) return null;
+    return value; 
   },
   
   fromDriver: (value) => {
-    if (!value || typeof value !== 'string') return [];
-    return value.replace(/[\[\]]/g, '').split(',').map(Number);
+    if (!value) return [];
+    if (Array.isArray(value)) return value.map(Number);
+    if (typeof value === 'string') {
+      return value.replace(/[\[\]\{\}]/g, '').split(',').map(Number);
+    }
+    return [];
   },
 });
 
@@ -39,10 +40,7 @@ export const documentChunks = pgTable("document_chunks", {
   }),
   content: text("content").notNull(),
   chunkIndex: integer("chunk_index").notNull(),
-  
-  // 3072 dimensions allowed through half-precision storage
-  embedding: halfvec("embedding", { dimensions: 3072 }), 
-  
+  embedding: halfvec("embedding", { dimensions: 768 }), 
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [

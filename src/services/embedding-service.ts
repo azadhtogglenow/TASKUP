@@ -1,49 +1,63 @@
-import { GoogleGenAI} from "@google/genai";
+import dotenv from 'dotenv';
+dotenv.config();
+
+import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
 import { config } from "../config/index.js";
 import { logger } from "../utils/logger.js";
-import dotenv from 'dotenv';
-dotenv.config()
 
 export class EmbeddingService {
-private static ai: GoogleGenAI | null = null;
-private static getClient(): GoogleGenAI {
-  if (!this.ai) {
-    const apiKey = process.env.GEMINI_API_KEY || (config as any).geminiApiKey;
-    if (!apiKey) {
-      throw new Error(
-        "CRITICAL_ENV_MISSING: GEMINI_API_KEY environment variable is missing or undefined!"
-      );
+  private static ai: GoogleGenAI | null = null;
+  
+  private static getClient(): GoogleGenAI {
+    if (!this.ai) {
+      const apiKey = process.env.GEMINI_API_KEY || (config as any).geminiApiKey;
+      if (!apiKey) {
+        throw new Error(
+          "CRITICAL_ENV_MISSING: GEMINI_API_KEY environment variable is missing or undefined!"
+        );
+      }
+      this.ai = new GoogleGenAI({ apiKey: apiKey });
     }
-    this.ai = new GoogleGenAI({ apiKey: apiKey });
+    return this.ai;
   }
-  return this.ai;
-}
 
   static async generateEmbeddings(
     texts: string[],
     onProgress?: (current: number) => void
   ): Promise<number[][]> {
-    logger.info(`Generating embeddings for ${texts.length} chunks via Gemini API...`);
+    const targetModel = "gemini-embedding-2";
+    const targetDimension = 3072; 
+
+    logger.info(`Generating embeddings for ${texts.length} chunks via Gemini (${targetModel}, target dimension: ${targetDimension})...`);
     const aiClient = this.getClient();
 
     try {
       const response = await aiClient.models.embedContent({
-        model: "gemini-embedding-2",
+        model: targetModel,
         contents: texts,
+        config: {
+          outputDimensionality: 768 
+        }
       });
 
-      // Map the returned list of embeddings to number arrays
       const embeddings: number[][] = (response.embeddings || []).map((emb) => {
-        const values = emb.values || [];
-        return values.slice(0, config.embedding.dimension);
+        let values = emb.values || [];
+        
+        if (values.length < targetDimension) {
+          const padding = new Array(targetDimension - values.length).fill(0);
+          values = values.concat(padding);
+        }
+        
+        return values;
       });
+      
       if (onProgress) {
         onProgress(texts.length);
       }
 
       logger.info(`Progress: ${texts.length}/${texts.length}`);
-      logger.info(`Generated ${embeddings.length} embeddings`);
+      logger.info(`Generated ${embeddings.length} stable 3072-dimension vectors.`);
       return embeddings;
 
     } catch (error) {
@@ -52,11 +66,13 @@ private static getClient(): GoogleGenAI {
     }
   }
 
-   static async generatePdfEmbedding(filePath: string, mimeType = "application/pdf"): Promise<number[]> {
+  static async generatePdfEmbedding(filePath: string, mimeType = "application/pdf"): Promise<number[]> {
     const aiClient = this.getClient();
+    const targetModel = "gemini-embedding-2";
+    const targetDimension = 3072;
 
     try {
-      logger.info(` Sending raw PDF to Gemini for native embedding...`);
+      logger.info(`Sending raw PDF to Gemini for native embedding...`);
       
       const pdfPart = {
         inlineData: {
@@ -66,28 +82,39 @@ private static getClient(): GoogleGenAI {
       };
 
       const response = await aiClient.models.embedContent({
-        model: config.embedding.model,
+        model: targetModel,
         contents: pdfPart, 
+        config: {
+          outputDimensionality: 768
+        }
       });
 
       const firstEmbedding = response.embeddings?.[0];
-      const embeddingValues = firstEmbedding?.values;
+      let embeddingValues = firstEmbedding?.values;
 
       if (!embeddingValues) {
         throw new Error("API response did not contain embedding values.");
       }
 
-      return embeddingValues.slice(0, config.embedding.dimension);
+      // Pad out the PDF embedding vector to 3072
+      if (embeddingValues.length < targetDimension) {
+        const padding = new Array(targetDimension - embeddingValues.length).fill(0);
+        embeddingValues = embeddingValues.concat(padding);
+      }
+
+      return embeddingValues;
     } catch (error) {
       logger.error(`PDF embedding generation error: ${error}`);
       throw new Error(`Failed to generate PDF embedding: ${error}`);
     }
   }
+
   static isLoaded(): boolean {
     return this.ai !== null;
   }
+  
   static async preload(): Promise<void> {
     this.getClient();
-    logger.info(" Gemini Embedding client initialized!");
+    logger.info("Gemini Embedding client initialized successfully!");
   }
 }
