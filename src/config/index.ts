@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 export const config = {
   server: {
     port: parseInt(process.env.PORT || "3000", 10),
@@ -36,9 +33,10 @@ export const config = {
     chunkOverlap: parseInt(process.env.CHUNK_OVERLAP || "200", 10),
   },
   embedding: {
-    model: process.env.EMBEDDING_MODEL || "models/text-embedding-004",
-    dimension: parseInt(process.env.EMBEDDING_DIMENSION || "3072", 10),
-  },
+  model: process.env.EMBEDDING_MODEL || "gemini-embedding-2",
+  dimension: parseInt(process.env.EMBEDDING_DIMENSION || "3072", 10),
+},
+
   logging: {
     level: process.env.LOG_LEVEL || "info",
   },

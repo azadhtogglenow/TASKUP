@@ -15,6 +15,13 @@
       "when": 1787139499577,
       "tag": "0001_parched_ultragirl",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787143537407,
+      "tag": "0002_good_tomorrow_man",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,11 @@
 import { pgTable, uuid, varchar, integer, text, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { index, customType } from "drizzle-orm/pg-core"; 
+
+// Corrected halfvec custom driver parser to ensure stable database transmissions
 const halfvec = customType<{ data: number[]; config: { dimensions: number } }>({
   dataType: (config) => `halfvec(${config?.dimensions})`,
+  
+  // Directly passes the numerical float array for native pg driver consumption
   toDriver: (value) => {
     if (!value || !Array.isArray(value)) return null;
     return value; 
@@ -40,7 +44,10 @@ export const documentChunks = pgTable("document_chunks", {
   }),
   content: text("content").notNull(),
   chunkIndex: integer("chunk_index").notNull(),
-  embedding: halfvec("embedding", { dimensions: 768 }), 
+  
+  // 3072 dimensions allowed through half-precision storage
+  embedding: halfvec("embedding", { dimensions: 3072 }), 
+  
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
