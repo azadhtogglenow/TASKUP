@@ -20,7 +20,10 @@ describe("Document API System End-to-End (E2E) Lifecycle Matrix", () => {
     vi.spyOn(StorageService, "uploadFile").mockResolvedValue("mocked/s3/path/test-file.pdf");
     vi.spyOn(StorageService, "downloadFile").mockResolvedValue(Buffer.from("%PDF-1.5 Mock PDF Data"));
     vi.spyOn(ParserService, "parse").mockResolvedValue("This is successful parsed sample text extracted via system service validation routines.");
-    vi.spyOn(EmbeddingService, "generateEmbeddings").mockResolvedValue([VALID_3072_EMBEDDING]);
+    vi.spyOn(EmbeddingService, "generateEmbeddings").mockImplementation(async (chunks: string[]) => {
+    return chunks.map(() => [...VALID_3072_EMBEDDING]);
+});
+
     await documentQueue.drain();
     await documentQueue.clean(0, 0, "completed");
     await documentQueue.clean(0, 0, "failed");
