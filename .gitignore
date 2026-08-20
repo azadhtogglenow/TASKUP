@@ -26,7 +26,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
-# Cache
-.cache/
-.eslintcache
