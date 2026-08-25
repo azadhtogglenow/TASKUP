@@ -1,11 +1,7 @@
 import { pgTable, uuid, varchar, integer, text, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { index, customType } from "drizzle-orm/pg-core"; 
-
-// Corrected halfvec custom driver parser to ensure stable database transmissions
 const halfvec = customType<{ data: number[]; config: { dimensions: number } }>({
   dataType: (config) => `halfvec(${config?.dimensions})`,
-  
-  // Directly passes the numerical float array for native pg driver consumption
   toDriver: (value) => {
     if (!value || !Array.isArray(value)) return null;
     return value; 
@@ -20,6 +16,7 @@ const halfvec = customType<{ data: number[]; config: { dimensions: number } }>({
     return [];
   },
 });
+
 
 export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),

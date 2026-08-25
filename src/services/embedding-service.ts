@@ -1,24 +1,24 @@
-import { GoogleGenAI} from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
 import { config } from "../config/index.js";
 import { logger } from "../utils/logger.js";
-import dotenv from 'dotenv';
-dotenv.config()
-
+import dotenv from "dotenv";
+dotenv.config();
 export class EmbeddingService {
-private static ai: GoogleGenAI | null = null;
-private static getClient(): GoogleGenAI {
-  if (!this.ai) {
-    const apiKey = process.env.GEMINI_API_KEY || (config as any).geminiApiKey;
-    if (!apiKey) {
-      throw new Error(
-        "CRITICAL_ENV_MISSING: GEMINI_API_KEY environment variable is missing or undefined!"
-      );
+  private static ai: GoogleGenAI | null = null;
+
+  private static getClient(): GoogleGenAI {
+    if (!this.ai) {
+      const apiKey = process.env.GEMINI_API_KEY || (config as any).geminiApiKey;
+      if (!apiKey) {
+        throw new Error(
+          "CRITICAL_ENV_MISSING: GEMINI_API_KEY environment variable is missing or undefined!"
+        );
+      }
+      this.ai = new GoogleGenAI({ apiKey: apiKey });
     }
-    this.ai = new GoogleGenAI({ apiKey: apiKey });
+    return this.ai;
   }
-  return this.ai;
-}
 
   static async generateEmbeddings(
     texts: string[],
@@ -29,15 +29,22 @@ private static getClient(): GoogleGenAI {
 
     try {
       const response = await aiClient.models.embedContent({
-        model: "gemini-embedding-2",
+        model: config.embedding.model || "text-embedding-004",
         contents: texts,
       });
 
-      // Map the returned list of embeddings to number arrays
-      const embeddings: number[][] = (response.embeddings || []).map((emb) => {
-        const values = emb.values || [];
-        return values.slice(0, config.embedding.dimension);
+      let rawEmbeddings: any[] = [];
+      if (response.embeddings) {
+        rawEmbeddings = Array.isArray(response.embeddings) 
+          ? response.embeddings 
+          : [response.embeddings];
+      }
+
+      const embeddings: number[][] = rawEmbeddings.map((emb) => {
+        const values = emb && typeof emb === 'object' && 'values' in emb ? (emb.values as number[]) : [];
+        return values.slice(0, config.embedding.dimension || 3072);
       });
+      
       if (onProgress) {
         onProgress(texts.length);
       }
@@ -52,7 +59,7 @@ private static getClient(): GoogleGenAI {
     }
   }
 
-   static async generatePdfEmbedding(filePath: string, mimeType = "application/pdf"): Promise<number[]> {
+  static async generatePdfEmbedding(filePath: string, mimeType = "application/pdf"): Promise<number[]> {
     const aiClient = this.getClient();
 
     try {
@@ -66,26 +73,32 @@ private static getClient(): GoogleGenAI {
       };
 
       const response = await aiClient.models.embedContent({
-        model: config.embedding.model,
+        model: config.embedding.model || "text-embedding-004",
         contents: pdfPart, 
       });
 
-      const firstEmbedding = response.embeddings?.[0];
+      let firstEmbedding: any = response.embeddings;
+      if (Array.isArray(response.embeddings)) {
+        firstEmbedding = response.embeddings[0];
+      }
+      
       const embeddingValues = firstEmbedding?.values;
 
-      if (!embeddingValues) {
-        throw new Error("API response did not contain embedding values.");
+      if (!embeddingValues || !Array.isArray(embeddingValues)) {
+        throw new Error("API response did not contain valid embedding values.");
       }
 
-      return embeddingValues.slice(0, config.embedding.dimension);
+      return embeddingValues.slice(0, config.embedding.dimension || 3072);
     } catch (error) {
       logger.error(`PDF embedding generation error: ${error}`);
       throw new Error(`Failed to generate PDF embedding: ${error}`);
     }
   }
+
   static isLoaded(): boolean {
     return this.ai !== null;
   }
+
   static async preload(): Promise<void> {
     this.getClient();
     logger.info(" Gemini Embedding client initialized!");

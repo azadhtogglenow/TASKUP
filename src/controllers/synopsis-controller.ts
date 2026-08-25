@@ -1,12 +1,8 @@
-// C:\Users\Azadh-desktop\OneDrive\Desktop\document-api\src\controllers\synopsis-controller.ts
 import { Request, Response, NextFunction } from "express";
 import { SynthesisService } from "../services/synthesis-service.js";
 import { logger } from "../utils/logger.js";
 
 export class SynopsisController {
-  /**
-   * HTTP Handler to process and return a document executive summary
-   */
   static async handleGetSynopsis(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { documentId } = req.params;
 
