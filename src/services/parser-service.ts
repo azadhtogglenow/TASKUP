@@ -1,5 +1,4 @@
 import { logger } from "../utils/logger.js";
-
 let pdfParse: (buffer: Buffer, options?: any) => Promise<{ text: string; numpages: number }>;
 let mammoth: {
   extractRawText: (options: { buffer: Buffer }) => Promise<{ value: string; messages: any[] }>;
@@ -37,41 +36,29 @@ export class ParserService {
     }
   }
 
-  private static async parsePDF(fileBuffer: Buffer): Promise<string> {
-    try {
-      const magicNumber = fileBuffer.subarray(0, 4).toString('utf-8');
-      if (magicNumber !== '%PDF') {
-        const textSnippet = fileBuffer.subarray(0, 250).toString('utf-8');
-        if (textSnippet.includes('<Error>') || textSnippet.includes('AccessDenied')) {
-          throw new Error(`The file payload is an S3 Storage Error instead of a PDF asset. Content: ${textSnippet.trim()}`);
-        }
-        throw new Error(`Invalid file signature. Expected "%PDF", received "${magicNumber}"`);
+private static async parsePDF(fileBuffer: Buffer): Promise<string> {
+  try {
+    const magicNumber = fileBuffer.subarray(0, 4).toString('utf-8');
+    if (magicNumber !== '%PDF') {
+      const textSnippet = fileBuffer.subarray(0, 250).toString('utf-8');
+      if (textSnippet.includes('<Error>') || textSnippet.includes('AccessDenied')) {
+        throw new Error(`The file payload is an S3 Storage Error instead of a PDF asset. Content: ${textSnippet.trim()}`);
       }
-
-      const options = {
-        pagerender: function(pageData: any) {
-          return pageData.getTextContent()
-            .then(function(textContent: any) {
-              return textContent.items.map((item: any) => item.str).join(' ');
-            })
-            .catch((err: any) => {
-              logger.warn(`Warning processing individual page content: ${err.message}`);
-              return '';
-            });
-        }
-      };
-
-      const result = await pdfParse(fileBuffer, options);
-      const text = result.text.trim();
-      logger.info(`   PDF parsed: ${text.length} characters, ${result.numpages} pages`);
-      
-      return text;
-    } catch (error: any) {
-      logger.error(`PDF parsing error: ${error.message || error}`);
-      // Throw a structured error that your queue processor can catch cleanly
-      throw new Error(`MALFORMED_PDF: ${error.message || error}`);
+      throw new Error(`Invalid file signature. Expected "%PDF", received "${magicNumber}"`);
     }
+
+    const result = await pdfParse(fileBuffer); 
+    const text = this.cleanText(result.text);
+    
+    logger.info(`   PDF parsed: ${text.length} characters, ${result.numpages} pages`);
+    
+    return text;
+  } catch (error: any) {
+    logger.error(`PDF parsing error: ${error.message || error}`);
+    throw new Error(`MALFORMED_PDF: ${error.message || error}`);
   }
+}
+
 
 
   private static async parseDOCX(fileBuffer: Buffer): Promise<string> {

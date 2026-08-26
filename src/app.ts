@@ -7,8 +7,8 @@ import { authMiddleware } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import uploadRoutes from "./routes/upload-routes.js";
 import statusRoutes from "./routes/status-routes.js";
-import searchRoutes from "./routes/search-routes.js";
 import { logger } from "./utils/logger.js";
+import { askRouter  } from "./routes/ask-router.js";
 
 const app = express();
 
@@ -38,7 +38,7 @@ app.get("/health", (req, res) => {
 
 app.use("/api/upload", authMiddleware, uploadRoutes);
 app.use("/api/status", authMiddleware, statusRoutes);
-app.use("/api",searchRoutes);
+app.use("/api", askRouter)
 
 export async function setupBullBoard() {
   try {

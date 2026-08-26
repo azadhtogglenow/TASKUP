@@ -1,9 +1,11 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE "document_chunks" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"document_id" uuid NOT NULL,
 	"content" text NOT NULL,
 	"chunk_index" integer NOT NULL,
-	"embedding" vector(384),
+	"embedding" vector(3072),
 	"metadata" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );

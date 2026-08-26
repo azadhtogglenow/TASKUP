@@ -1,24 +1,25 @@
-import { GoogleGenAI} from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
 import { config } from "../config/index.js";
 import { logger } from "../utils/logger.js";
 import dotenv from 'dotenv';
-dotenv.config()
+dotenv.config();
 
 export class EmbeddingService {
-private static ai: GoogleGenAI | null = null;
-private static getClient(): GoogleGenAI {
-  if (!this.ai) {
-    const apiKey = process.env.GEMINI_API_KEY || (config as any).geminiApiKey;
-    if (!apiKey) {
-      throw new Error(
-        "CRITICAL_ENV_MISSING: GEMINI_API_KEY environment variable is missing or undefined!"
-      );
+  private static ai: GoogleGenAI | null = null;
+
+  private static getClient(): GoogleGenAI {
+    if (!this.ai) {
+      const apiKey = process.env.GEMINI_API_KEY || (config as any).geminiApiKey;
+      if (!apiKey) {
+        throw new Error(
+          "CRITICAL_ENV_MISSING: GEMINI_API_KEY environment variable is missing or undefined!"
+        );
+      }
+      this.ai = new GoogleGenAI({ apiKey: apiKey });
     }
-    this.ai = new GoogleGenAI({ apiKey: apiKey });
+    return this.ai;
   }
-  return this.ai;
-}
 
   static async generateEmbeddings(
     texts: string[],
@@ -26,25 +27,44 @@ private static getClient(): GoogleGenAI {
   ): Promise<number[][]> {
     logger.info(`Generating embeddings for ${texts.length} chunks via Gemini API...`);
     const aiClient = this.getClient();
+    const embeddingsList: number[][] = [];
+
+    
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     try {
-      const response = await aiClient.models.embedContent({
-        model: "gemini-embedding-2",
-        contents: texts,
-      });
+      const batchSize = 5; 
 
-      // Map the returned list of embeddings to number arrays
-      const embeddings: number[][] = (response.embeddings || []).map((emb) => {
-        const values = emb.values || [];
-        return values.slice(0, config.embedding.dimension);
-      });
-      if (onProgress) {
-        onProgress(texts.length);
+      for (let i = 0; i < texts.length; i += batchSize) {
+        const textBatch = texts.slice(i, i + batchSize);
+        
+        const batchPromises = textBatch.map(async (text) => {
+          const response = await aiClient.models.embedContent({
+            model: "gemini-embedding-2",
+            contents: text,
+          });
+
+          const values = response.embeddings?.[0]?.values;
+          if (!values) {
+            throw new Error("Gemini API returned an empty or malformed embedding vector.");
+          }
+          return values;
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        embeddingsList.push(...batchResults);
+
+        if (onProgress) {
+          onProgress(embeddingsList.length);
+        }
+        logger.info(`Progress: ${embeddingsList.length}/${texts.length}`);
+        if (i + batchSize < texts.length) {
+          await sleep(4000); 
+        }
       }
 
-      logger.info(`Progress: ${texts.length}/${texts.length}`);
-      logger.info(`Generated ${embeddings.length} embeddings`);
-      return embeddings;
+      logger.info(`Generated ${embeddingsList.length} embeddings`);
+      return embeddingsList;
 
     } catch (error) {
       logger.error(`Batch embedding generation error: ${error}`);
@@ -52,7 +72,9 @@ private static getClient(): GoogleGenAI {
     }
   }
 
-   static async generatePdfEmbedding(filePath: string, mimeType = "application/pdf"): Promise<number[]> {
+
+ 
+  static async generatePdfEmbedding(filePath: string, mimeType = "application/pdf"): Promise<number[]> {
     const aiClient = this.getClient();
 
     try {
@@ -66,26 +88,27 @@ private static getClient(): GoogleGenAI {
       };
 
       const response = await aiClient.models.embedContent({
-        model: config.embedding.model,
+        model: "gemini-embedding-2", 
         contents: pdfPart, 
       });
 
-      const firstEmbedding = response.embeddings?.[0];
-      const embeddingValues = firstEmbedding?.values;
+      const embeddingValues = response.embeddings?.[0]?.values;
 
       if (!embeddingValues) {
         throw new Error("API response did not contain embedding values.");
       }
 
-      return embeddingValues.slice(0, config.embedding.dimension);
+      return embeddingValues; 
     } catch (error) {
       logger.error(`PDF embedding generation error: ${error}`);
       throw new Error(`Failed to generate PDF embedding: ${error}`);
     }
   }
+
   static isLoaded(): boolean {
     return this.ai !== null;
   }
+
   static async preload(): Promise<void> {
     this.getClient();
     logger.info(" Gemini Embedding client initialized!");

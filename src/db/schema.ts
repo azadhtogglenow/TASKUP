@@ -1,3 +1,4 @@
+//C:\Users\Azadh-desktop\OneDrive\Desktop\document-api\src\db\schema.ts
 import { Table } from "drizzle-orm"
 import {pgTable,uuid,varchar,integer,text,timestamp,jsonb,} from "drizzle-orm/pg-core";
 import { vector } from "drizzle-orm/pg-core";
