@@ -1,0 +1,22 @@
+# Only PostgreSQL runs in Docker.
+# The TypeScript app runs locally with npm (no Dockerfile, per requirements).
+services:
+  postgres:
+    image: postgres:17
+    container_name: agent-demo-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agent_demo
+    ports:
+      - "5432:5432"
+    volumes:
+      - agent-demo-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agent_demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  agent-demo-pgdata:
