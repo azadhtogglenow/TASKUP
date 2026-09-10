@@ -8,7 +8,7 @@ export interface AgentStep {
   tool: string;
   args: unknown;
   result: string;
-}
+}                                                                                                                                                                                                                                                                                                 
 
 export interface AgentRunResult {
   answer: string;
